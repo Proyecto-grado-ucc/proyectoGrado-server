@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -18,6 +19,7 @@ import { Auditar } from '../../seguridad/decoradores/auditar.decorador';
 import { Roles } from '../../seguridad/decoradores/roles.decorador';
 import { RolNombre } from '../../seguridad/entidades/rol.entidad';
 import { GenerarHorarioDto } from './dto/generar-horario.dto';
+import { ActualizarAsignacionesDto } from './dto/actualizar-asignaciones.dto';
 import { RespuestaHorarioDto, RespuestaPaginadaHorarioDto } from './dto/respuesta-horario.dto';
 import { HorariosServicio } from './horarios.servicio';
 
@@ -70,6 +72,18 @@ export class HorariosControlador {
   @ApiResponse({ status: 200 })
   archivarTodos(): Promise<void> {
     return this.horariosServicio.archivarTodos();
+  }
+
+  @Roles(RolNombre.Admin)
+  @Patch(':id/asignaciones')
+  @Auditar('HORARIO')
+  @ApiOperation({ summary: 'Actualizar asignaciones del horario (drag & drop)' })
+  @ApiResponse({ status: 200, type: RespuestaHorarioDto })
+  actualizarAsignaciones(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ActualizarAsignacionesDto,
+  ): Promise<RespuestaHorarioDto> {
+    return this.horariosServicio.actualizarAsignaciones(id, dto);
   }
 
   @Get(':id')

@@ -13,6 +13,7 @@ import { FranjaHoraria } from '../entidades/franja-horaria.entidad';
 import { Grupo } from '../entidades/grupo.entidad';
 import { Horario } from '../entidades/horario.entidad';
 import { GenerarHorarioDto } from './dto/generar-horario.dto';
+import { ActualizarAsignacionesDto } from './dto/actualizar-asignaciones.dto';
 import { RespuestaHorarioDto, RespuestaPaginadaHorarioDto } from './dto/respuesta-horario.dto';
 
 @Injectable()
@@ -80,6 +81,13 @@ export class HorariosServicio {
     const h = await this.horarioRepo.findOne({ where: { id } });
     if (!h) throw new NotFoundException(`Horario ${id} no encontrado`);
     return this.mapear(h);
+  }
+
+  async actualizarAsignaciones(id: number, dto: ActualizarAsignacionesDto): Promise<RespuestaHorarioDto> {
+    const h = await this.horarioRepo.findOne({ where: { id } });
+    if (!h) throw new NotFoundException(`Horario ${id} no encontrado`);
+    h.asignaciones = dto.asignaciones as any;
+    return this.mapear(await this.horarioRepo.save(h));
   }
 
   async eliminar(id: number): Promise<void> {
