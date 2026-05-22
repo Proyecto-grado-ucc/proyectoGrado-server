@@ -16,12 +16,37 @@ function usarSsl(env: NodeJS.ProcessEnv): boolean {
   return env.DATABASE_URL?.includes('sslmode=require') ?? false;
 }
 
+function validarConexionProduccion(env: NodeJS.ProcessEnv): void {
+  if ((env.NODE_ENV ?? 'development') !== 'production' || env.DATABASE_URL) return;
+
+  const requeridas = ['DB_HOST', 'DB_PORT', 'DB_USUARIO', 'DB_CONTRASENA', 'DB_NOMBRE'];
+  const faltantes = requeridas.filter((nombre) => !env[nombre]?.trim());
+  if (faltantes.length > 0) {
+    throw new Error(
+      `Faltan variables de PostgreSQL en produccion: ${faltantes.join(', ')}. En Railway usa las variables del servicio Postgres.`,
+    );
+  }
+
+  if (env.DB_HOST?.trim().toLowerCase() === 'db') {
+    throw new Error(
+      'DB_HOST=db solo sirve con docker-compose local. En Railway configura DB_HOST=${{Postgres.PGHOST}} o usa DATABASE_URL.',
+    );
+  }
+
+  if (!Number.isInteger(Number(env.DB_PORT))) {
+    throw new Error('DB_PORT debe ser un numero valido en produccion.');
+  }
+}
+
 export function crearOpcionesTypeOrm(
   env: NodeJS.ProcessEnv = process.env,
 ): PostgresConnectionOptions {
   const baseDir = join(__dirname, '..');
   const nodeEnv = env.NODE_ENV ?? 'development';
   const databaseUrl = env.DATABASE_URL;
+
+  validarConexionProduccion(env);
+
   const conexion = databaseUrl
     ? { url: databaseUrl }
     : {

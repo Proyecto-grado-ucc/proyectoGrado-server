@@ -46,7 +46,7 @@ async function arrancar() {
   const documento = SwaggerModule.createDocument(app, configuracionSwagger);
   SwaggerModule.setup('api/docs', app, documento);
 
-  const puerto = Number(process.env.PORT ?? 3000);
+  const puerto = Number(process.env.PORT || 3000);
   await app.listen(puerto, '0.0.0.0');
   logger.log(`Servidor en http://localhost:${puerto}/api`, 'Bootstrap');
   logger.log(`Documentación en http://localhost:${puerto}/api/docs`, 'Bootstrap');

@@ -2,6 +2,8 @@
 
 Este backend debe desplegarse como servicio Node/NestJS con PostgreSQL en Railway. La API usa el prefijo global `/api`, por lo que las pruebas iniciales son `/api/salud`, `/api/docs` y `/api/auth/login`.
 
+Railway detecta automaticamente el `Dockerfile` de este repositorio. Ese `Dockerfile` ya esta preparado para produccion: instala con `npm ci`, compila con `npm run build` y arranca con `npm run start`. No depende de `docker-compose.yml`.
+
 ## 1. Preparar Railway
 
 1. Crear un proyecto nuevo en Railway.
@@ -46,22 +48,21 @@ GEMINI_API_KEY=<opcional>
 
 No configurar secretos JWT con valores de ejemplo. En `NODE_ENV=production`, el servidor rechaza el arranque si faltan secretos seguros o conexion a base de datos.
 
-## 3. Build y start command
+`DB_HOST=db` nunca debe usarse en Railway. Ese host solo existe cuando el backend y PostgreSQL corren juntos dentro de `docker-compose.yml` local. En Railway, `DB_HOST` debe apuntar al servicio `Postgres` mediante `${{Postgres.PGHOST}}`, o puedes usar `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
 
-Usar Nixpacks de Railway o el Dockerfile incluido. Para Nixpacks:
+## 3. Dockerfile en Railway
+
+Railway usa el `Dockerfile` detectado automaticamente. El flujo interno es:
 
 ```bash
 npm ci
 npm run build
-```
-
-Start command:
-
-```bash
 npm run start
 ```
 
-No usar `npm run start:dev` en produccion.
+El `Dockerfile` expone el puerto `3000`, pero la aplicacion escucha `process.env.PORT || 3000`, por lo que respeta el puerto dinamico de Railway. No usar `npm run start:dev` en produccion.
+
+`docker-compose.yml`, si existe en la rama, es solo para desarrollo local. No se debe conectar el backend de Railway al host `db` de Compose.
 
 ## 4. Migraciones
 

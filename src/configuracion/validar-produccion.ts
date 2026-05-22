@@ -26,6 +26,16 @@ export function validarConfiguracionProduccion(): void {
     );
   }
 
+  if (!process.env.DATABASE_URL && process.env.DB_HOST?.trim().toLowerCase() === 'db') {
+    throw new Error(
+      'DB_HOST=db solo existe dentro de docker-compose local. En Railway configura DB_HOST=${{Postgres.PGHOST}} o DATABASE_URL=${{Postgres.DATABASE_URL}}.',
+    );
+  }
+
+  if (!process.env.DATABASE_URL && !Number.isInteger(Number(process.env.DB_PORT))) {
+    throw new Error('DB_PORT debe ser un numero valido en produccion.');
+  }
+
   const secretosInseguros = ['JWT_SECRETO', 'JWT_REFRESCO_SECRETO'].filter((nombre) =>
     esSecretoInseguro(process.env[nombre]),
   );
