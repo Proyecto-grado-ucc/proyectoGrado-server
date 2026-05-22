@@ -18,9 +18,15 @@ import { RolesGuardia } from '../../seguridad/auth/guardias/roles.guardia';
 import { Auditar } from '../../seguridad/decoradores/auditar.decorador';
 import { Roles } from '../../seguridad/decoradores/roles.decorador';
 import { RolNombre } from '../../seguridad/entidades/rol.entidad';
+import { UsuarioActual } from '../../seguridad/decoradores/usuario-actual.decorador';
+import { UsuarioAutenticado } from '../../seguridad/auth/estrategias/jwt.estrategia';
 import { ActualizarEstudianteDto } from './dto/actualizar-estudiante.dto';
 import { CrearEstudianteDto } from './dto/crear-estudiante.dto';
-import { RespuestaEstudianteDto, RespuestaPaginadaEstudianteDto } from './dto/respuesta-estudiante.dto';
+import { MatricularEstudianteDto } from './dto/matricular-estudiante.dto';
+import {
+  RespuestaEstudianteDto,
+  RespuestaPaginadaEstudianteDto,
+} from './dto/respuesta-estudiante.dto';
 import { EstudiantesServicio } from './estudiantes.servicio';
 
 @ApiTags('estudiantes')
@@ -37,6 +43,18 @@ export class EstudiantesControlador {
   @ApiResponse({ status: 201, type: RespuestaEstudianteDto })
   crear(@Body() dto: CrearEstudianteDto): Promise<RespuestaEstudianteDto> {
     return this.estudiantesServicio.crear(dto);
+  }
+
+  @Post('matricular')
+  @Auditar('ESTUDIANTE')
+  @Roles(RolNombre.Admin, RolNombre.Estudiante)
+  @ApiOperation({ summary: 'Matricular estudiante autenticado en un grupo por codigo de acceso' })
+  @ApiResponse({ status: 200, type: RespuestaEstudianteDto })
+  matricular(
+    @UsuarioActual() usuario: UsuarioAutenticado,
+    @Body() dto: MatricularEstudianteDto,
+  ): Promise<RespuestaEstudianteDto> {
+    return this.estudiantesServicio.matricular(usuario.id, dto);
   }
 
   @Get()

@@ -5,8 +5,12 @@ import { Docente } from '../../compartido/entidades/docente.entidad';
 import { Evaluacion } from '../entidades/evaluacion.entidad';
 import { Formulario } from '../entidades/formulario.entidad';
 import { ActualizarEvaluacionDto } from './dto/actualizar-evaluacion.dto';
+import { CompletarEvaluacionDto } from './dto/completar-evaluacion.dto';
 import { CrearEvaluacionDto } from './dto/crear-evaluacion.dto';
-import { RespuestaEvaluacionDto, RespuestaPaginadaEvaluacionDto } from './dto/respuesta-evaluacion.dto';
+import {
+  RespuestaEvaluacionDto,
+  RespuestaPaginadaEvaluacionDto,
+} from './dto/respuesta-evaluacion.dto';
 
 @Injectable()
 export class EvaluacionesServicio {
@@ -19,14 +23,25 @@ export class EvaluacionesServicio {
   async crear(dto: CrearEvaluacionDto): Promise<RespuestaEvaluacionDto> {
     const formulario = await this.formularioRepo.findOne({ where: { id: dto.formularioId } });
     if (!formulario) throw new NotFoundException(`Formulario ${dto.formularioId} no encontrado`);
-    const docenteEvaluado = await this.docenteRepo.findOne({ where: { id: dto.docenteEvaluadoId } });
-    if (!docenteEvaluado) throw new NotFoundException(`Docente ${dto.docenteEvaluadoId} no encontrado`);
-    const e = this.evaluacionRepo.create({ formulario, docenteEvaluado, evaluadorId: dto.evaluadorId ?? null });
+    const docenteEvaluado = await this.docenteRepo.findOne({
+      where: { id: dto.docenteEvaluadoId },
+    });
+    if (!docenteEvaluado)
+      throw new NotFoundException(`Docente ${dto.docenteEvaluadoId} no encontrado`);
+    const e = this.evaluacionRepo.create({
+      formulario,
+      docenteEvaluado,
+      evaluadorId: dto.evaluadorId ?? null,
+    });
     return this.mapear(await this.evaluacionRepo.save(e));
   }
 
   async listar(page: number, size: number): Promise<RespuestaPaginadaEvaluacionDto> {
-    const [items, total] = await this.evaluacionRepo.findAndCount({ order: { creadoEn: 'DESC' }, skip: (page - 1) * size, take: size });
+    const [items, total] = await this.evaluacionRepo.findAndCount({
+      order: { creadoEn: 'DESC' },
+      skip: (page - 1) * size,
+      take: size,
+    });
     return { items: items.map((e) => this.mapear(e)), total, page, size };
   }
 
@@ -40,6 +55,22 @@ export class EvaluacionesServicio {
     const e = await this.evaluacionRepo.findOne({ where: { id } });
     if (!e) throw new NotFoundException(`Evaluación ${id} no encontrada`);
     if (dto.estado !== undefined) e.estado = dto.estado;
+    return this.mapear(await this.evaluacionRepo.save(e));
+  }
+
+  async completar(id: number, dto: CompletarEvaluacionDto): Promise<RespuestaEvaluacionDto> {
+    const e = await this.evaluacionRepo.findOne({ where: { id } });
+    if (!e) throw new NotFoundException(`EvaluaciÃ³n ${id} no encontrada`);
+
+    const estudiantesCompletaron = new Set(e.estudiantesCompletaron ?? []);
+    estudiantesCompletaron.add(dto.estudianteId);
+    e.estudiantesCompletaron = [...estudiantesCompletaron];
+
+    const comentario = dto.comentario?.trim();
+    if (comentario) {
+      e.comentariosAnonimos = [...(e.comentariosAnonimos ?? []), comentario];
+    }
+
     return this.mapear(await this.evaluacionRepo.save(e));
   }
 
@@ -58,6 +89,8 @@ export class EvaluacionesServicio {
       docenteEvaluadoNombre: e.docenteEvaluado.usuario.nombre,
       evaluadorId: e.evaluadorId,
       estado: e.estado,
+      estudiantesCompletaron: e.estudiantesCompletaron ?? [],
+      comentariosAnonimos: e.comentariosAnonimos ?? [],
       creadoEn: e.creadoEn,
     };
   }

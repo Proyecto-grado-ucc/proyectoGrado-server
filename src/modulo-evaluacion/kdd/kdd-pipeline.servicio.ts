@@ -37,7 +37,10 @@ export class KddPipelineServicio {
       .innerJoin('fm.periodo', 'per')
       .leftJoinAndSelect('ev.docenteEvaluado', 'doc')
       .where('per.id = :periodoId', { periodoId })
-      .andWhere('ev.estado = :estado', { estado: EstadoEvaluacion.Completada })
+      .andWhere(
+        `(ev.estado = :estado OR jsonb_array_length(COALESCE(ev.estudiantes_completaron, '[]'::jsonb)) > 0)`,
+        { estado: EstadoEvaluacion.Completada },
+      )
       .getMany();
 
     if (!evaluaciones.length) {
@@ -47,9 +50,9 @@ export class KddPipelineServicio {
     }
 
     // Stage 2 — Preprocesamiento: mapear evaluaciones a docenteId
-    const evalIds = evaluaciones.map(e => e.id);
+    const evalIds = evaluaciones.map((e) => e.id);
     const evalToDocente = new Map<number, number>(
-      evaluaciones.map(e => [e.id, (e.docenteEvaluado as Docente).id]),
+      evaluaciones.map((e) => [e.id, (e.docenteEvaluado as Docente).id]),
     );
 
     // Cargar respuestas numéricas con sus preguntas y dimensiones
@@ -68,7 +71,7 @@ export class KddPipelineServicio {
     for (const ev of evaluaciones) {
       const docId = (ev.docenteEvaluado as Docente).id;
       if (!docenteData.has(docId)) docenteData.set(docId, { dims: new Map(), evalCount: 0 });
-      docenteData.get(docId)!.evalCount++;
+      docenteData.get(docId)!.evalCount += Math.max(ev.estudiantesCompletaron?.length ?? 0, 1);
     }
 
     for (const r of respNumericas) {
@@ -123,7 +126,7 @@ export class KddPipelineServicio {
     const alertas: Alerta[] = [];
 
     const docentes = await this.docenteRepo.find();
-    const docentesConResultado = new Set(savedResultados.map(r => r.docenteId));
+    const docentesConResultado = new Set(savedResultados.map((r) => r.docenteId));
 
     for (const docente of docentes) {
       if (!docentesConResultado.has(docente.id)) {
@@ -174,7 +177,7 @@ export class KddPipelineServicio {
 
   async listarResultados(periodoId: number): Promise<RespuestaResultadoKddDto[]> {
     const resultados = await this.resultadoRepo.find({ where: { periodoId } });
-    return resultados.map(r => ({
+    return resultados.map((r) => ({
       id: r.id,
       periodoId: r.periodoId,
       docenteId: r.docenteId,

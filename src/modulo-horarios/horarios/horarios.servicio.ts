@@ -1,17 +1,18 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { PeriodoAcademico } from '../../compartido/entidades/periodo-academico.entidad';
 import { Docente } from '../../compartido/entidades/docente.entidad';
 import { AlgoritmoGenetico } from '../motor/algoritmo-genetico';
 import { BusquedaTabu } from '../motor/busqueda-tabu';
 import { GeminiServicio } from '../motor/gemini.servicio';
-import { CONFIG_DEFAULT, EntradaMotor } from '../motor/tipos';
+import { EntradaMotor } from '../motor/tipos';
 import { Aula } from '../entidades/aula.entidad';
 import { Disponibilidad } from '../entidades/disponibilidad.entidad';
 import { FranjaHoraria } from '../entidades/franja-horaria.entidad';
 import { Grupo } from '../entidades/grupo.entidad';
 import { Horario } from '../entidades/horario.entidad';
+import { ActualizarAsignacionesHorarioDto } from './dto/actualizar-asignaciones-horario.dto';
 import { GenerarHorarioDto } from './dto/generar-horario.dto';
 import { RespuestaHorarioDto, RespuestaPaginadaHorarioDto } from './dto/respuesta-horario.dto';
 
@@ -35,10 +36,12 @@ export class HorariosServicio {
     if (!periodo) throw new NotFoundException(`Periodo ${dto.periodoId} no encontrado`);
 
     const entrada = await this.cargarEntrada();
-    if (!entrada.grupos.length) throw new BadRequestException('No hay grupos registrados para generar horario');
+    if (!entrada.grupos.length)
+      throw new BadRequestException('No hay grupos registrados para generar horario');
     if (!entrada.docentes.length) throw new BadRequestException('No hay docentes registrados');
     if (!entrada.aulas.length) throw new BadRequestException('No hay aulas registradas');
-    if (!entrada.franjas.length) throw new BadRequestException('No hay franjas horarias registradas');
+    if (!entrada.franjas.length)
+      throw new BadRequestException('No hay franjas horarias registradas');
 
     const configBase = await this.geminiServicio.sugerirConfiguracion(entrada);
     const config = { ...configBase, ...(dto.configuracion ?? {}) };
@@ -65,8 +68,16 @@ export class HorariosServicio {
     return this.mapear(await this.horarioRepo.save(horario));
   }
 
-  async listar(page: number, size: number): Promise<RespuestaPaginadaHorarioDto> {
+  async listar(
+    page: number,
+    size: number,
+    archivado?: boolean,
+  ): Promise<RespuestaPaginadaHorarioDto> {
+    const where: FindOptionsWhere<Horario> = {};
+    if (archivado !== undefined) where.archivado = archivado;
+
     const [items, total] = await this.horarioRepo.findAndCount({
+      where,
       order: { creadoEn: 'DESC' },
       skip: (page - 1) * size,
       take: size,
@@ -78,6 +89,31 @@ export class HorariosServicio {
     const h = await this.horarioRepo.findOne({ where: { id } });
     if (!h) throw new NotFoundException(`Horario ${id} no encontrado`);
     return this.mapear(h);
+  }
+
+  async actualizarAsignaciones(
+    id: number,
+    dto: ActualizarAsignacionesHorarioDto,
+  ): Promise<RespuestaHorarioDto> {
+    const h = await this.horarioRepo.findOne({ where: { id } });
+    if (!h) throw new NotFoundException(`Horario ${id} no encontrado`);
+
+    h.asignaciones = dto.asignaciones;
+    h.metadatos = {
+      ...(h.metadatos ?? {}),
+      editadoManualmente: true,
+      actualizadoEn: new Date().toISOString(),
+    };
+
+    return this.mapear(await this.horarioRepo.save(h));
+  }
+
+  async archivarTodos(): Promise<void> {
+    await this.horarioRepo.update({ archivado: false }, { archivado: true });
+  }
+
+  async eliminarHistorial(): Promise<void> {
+    await this.horarioRepo.delete({ archivado: true });
   }
 
   async eliminar(id: number): Promise<void> {
@@ -103,7 +139,11 @@ export class HorariosServicio {
     }
 
     return {
-      grupos: grupos.map((g) => ({ id: g.id, cupoMax: g.cupoMax, sesiones: g.curso.intensidadHoraria })),
+      grupos: grupos.map((g) => ({
+        id: g.id,
+        cupoMax: g.cupoMax,
+        sesiones: g.curso.intensidadHoraria,
+      })),
       docentes: docentes.map((d) => ({
         id: d.id,
         cargaMaximaHoras: d.cargaMaximaHoras,
@@ -123,6 +163,7 @@ export class HorariosServicio {
       fitness: h.fitness,
       generaciones: h.generaciones,
       tiempoMs: h.tiempoMs,
+      archivado: h.archivado,
       creadoEn: h.creadoEn,
     };
   }

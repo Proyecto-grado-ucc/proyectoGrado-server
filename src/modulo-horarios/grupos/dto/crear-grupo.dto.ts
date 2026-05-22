@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsIn, IsInt, IsNotEmpty, IsString, MaxLength, Min } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 import { Jornada } from '../../entidades/grupo.entidad';
 
 export class CrearGrupoDto {
@@ -8,6 +8,12 @@ export class CrearGrupoDto {
   @IsNotEmpty()
   @MaxLength(20)
   codigo: string;
+
+  @ApiProperty({ example: 'G-01-2026A', required: false })
+  @IsString()
+  @IsOptional()
+  @MaxLength(64)
+  codigoAcceso?: string;
 
   @ApiProperty({ example: 1 })
   @IsInt()

@@ -1,11 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Grupo } from '../../modulo-horarios/entidades/grupo.entidad';
 import { Usuario } from '../../seguridad/entidades/usuario.entidad';
 import { Estudiante } from '../entidades/estudiante.entidad';
 import { ActualizarEstudianteDto } from './dto/actualizar-estudiante.dto';
 import { CrearEstudianteDto } from './dto/crear-estudiante.dto';
-import { RespuestaEstudianteDto, RespuestaPaginadaEstudianteDto } from './dto/respuesta-estudiante.dto';
+import { MatricularEstudianteDto } from './dto/matricular-estudiante.dto';
+import {
+  RespuestaEstudianteDto,
+  RespuestaPaginadaEstudianteDto,
+} from './dto/respuesta-estudiante.dto';
 
 @Injectable()
 export class EstudiantesServicio {
@@ -14,6 +19,8 @@ export class EstudiantesServicio {
     private readonly estudianteRepo: Repository<Estudiante>,
     @InjectRepository(Usuario)
     private readonly usuarioRepo: Repository<Usuario>,
+    @InjectRepository(Grupo)
+    private readonly grupoRepo: Repository<Grupo>,
   ) {}
 
   async crear(dto: CrearEstudianteDto): Promise<RespuestaEstudianteDto> {
@@ -53,6 +60,23 @@ export class EstudiantesServicio {
     if (dto.grupoId !== undefined) e.grupoId = dto.grupoId ?? null;
 
     return this.mapear(await this.estudianteRepo.save(e));
+  }
+
+  async matricular(
+    usuarioId: number,
+    dto: MatricularEstudianteDto,
+  ): Promise<RespuestaEstudianteDto> {
+    const estudiante = await this.estudianteRepo.findOne({ where: { usuario: { id: usuarioId } } });
+    if (!estudiante)
+      throw new NotFoundException(`Estudiante para usuario ${usuarioId} no encontrado`);
+
+    const grupo = await this.grupoRepo.findOne({
+      where: { codigoAcceso: dto.codigoAcceso.trim() },
+    });
+    if (!grupo) throw new NotFoundException('Codigo de acceso de grupo no encontrado');
+
+    estudiante.grupoId = grupo.id;
+    return this.mapear(await this.estudianteRepo.save(estudiante));
   }
 
   async eliminar(id: number): Promise<void> {

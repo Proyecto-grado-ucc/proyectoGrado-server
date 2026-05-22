@@ -30,7 +30,7 @@ import { AuditarInterceptor } from './decoradores/auditar.interceptor';
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRETO', 'secreto_por_defecto_cambiar'),
-        signOptions: { expiresIn: config.get<string>('JWT_EXPIRACION', '8h') },
+        signOptions: { expiresIn: config.get<string>('JWT_EXPIRACION', '15m') },
       }),
       inject: [ConfigService],
     }),

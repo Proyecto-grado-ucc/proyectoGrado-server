@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuardia } from '../../seguridad/auth/guardias/jwt.guardia';
 import { RolesGuardia } from '../../seguridad/auth/guardias/roles.guardia';
@@ -7,8 +20,12 @@ import { Roles } from '../../seguridad/decoradores/roles.decorador';
 import { RolNombre } from '../../seguridad/entidades/rol.entidad';
 import { EvaluacionesServicio } from './evaluaciones.servicio';
 import { ActualizarEvaluacionDto } from './dto/actualizar-evaluacion.dto';
+import { CompletarEvaluacionDto } from './dto/completar-evaluacion.dto';
 import { CrearEvaluacionDto } from './dto/crear-evaluacion.dto';
-import { RespuestaEvaluacionDto, RespuestaPaginadaEvaluacionDto } from './dto/respuesta-evaluacion.dto';
+import {
+  RespuestaEvaluacionDto,
+  RespuestaPaginadaEvaluacionDto,
+} from './dto/respuesta-evaluacion.dto';
 
 @ApiTags('evaluaciones')
 @ApiBearerAuth()
@@ -44,10 +61,25 @@ export class EvaluacionesControlador {
     return this.evaluacionesServicio.buscarPorId(id);
   }
 
+  @Post(':id/completar')
+  @Auditar('EVALUACION')
+  @Roles(RolNombre.Admin, RolNombre.Estudiante)
+  @ApiOperation({ summary: 'Registrar que un estudiante completo una evaluacion' })
+  @ApiResponse({ status: 200, type: RespuestaEvaluacionDto })
+  completar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CompletarEvaluacionDto,
+  ): Promise<RespuestaEvaluacionDto> {
+    return this.evaluacionesServicio.completar(id, dto);
+  }
+
   @Patch(':id')
   @Auditar('EVALUACION')
   @ApiResponse({ status: 200, type: RespuestaEvaluacionDto })
-  actualizar(@Param('id', ParseIntPipe) id: number, @Body() dto: ActualizarEvaluacionDto): Promise<RespuestaEvaluacionDto> {
+  actualizar(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: ActualizarEvaluacionDto,
+  ): Promise<RespuestaEvaluacionDto> {
     return this.evaluacionesServicio.actualizar(id, dto);
   }
 

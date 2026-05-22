@@ -1,20 +1,35 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Grupo } from '../../modulo-horarios/entidades/grupo.entidad';
 import { Usuario } from '../../seguridad/entidades/usuario.entidad';
 import { Estudiante } from '../entidades/estudiante.entidad';
 import { EstudiantesServicio } from './estudiantes.servicio';
 
 const mockUsuario = (): Usuario =>
-  ({ id: 1, nombre: 'Ana López', email: 'ana@cal.edu.co', rol: { nombre: 'Estudiante' }, activo: true, fechaCreacion: new Date() }) as unknown as Usuario;
+  ({
+    id: 1,
+    nombre: 'Ana López',
+    email: 'ana@cal.edu.co',
+    rol: { nombre: 'Estudiante' },
+    activo: true,
+    fechaCreacion: new Date(),
+  }) as unknown as Usuario;
 
 const mockEstudiante = (): Estudiante =>
   ({ id: 1, usuario: mockUsuario(), grupoId: null }) as unknown as Estudiante;
 
 describe('EstudiantesServicio', () => {
   let servicio: EstudiantesServicio;
-  let estudianteRepo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
+  let estudianteRepo: {
+    findOne: jest.Mock;
+    findAndCount: jest.Mock;
+    create: jest.Mock;
+    save: jest.Mock;
+    remove: jest.Mock;
+  };
   let usuarioRepo: { findOne: jest.Mock };
+  let grupoRepo: { findOne: jest.Mock };
 
   beforeEach(async () => {
     estudianteRepo = {
@@ -25,12 +40,14 @@ describe('EstudiantesServicio', () => {
       remove: jest.fn(),
     };
     usuarioRepo = { findOne: jest.fn() };
+    grupoRepo = { findOne: jest.fn() };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         EstudiantesServicio,
         { provide: getRepositoryToken(Estudiante), useValue: estudianteRepo },
         { provide: getRepositoryToken(Usuario), useValue: usuarioRepo },
+        { provide: getRepositoryToken(Grupo), useValue: grupoRepo },
       ],
     }).compile();
 

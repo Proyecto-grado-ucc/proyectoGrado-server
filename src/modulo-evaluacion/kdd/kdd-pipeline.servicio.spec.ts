@@ -31,12 +31,12 @@ describe('KddPipelineServicio', () => {
     resultadoRepo = {
       find: jest.fn().mockResolvedValue([]),
       delete: jest.fn().mockResolvedValue(undefined),
-      create: jest.fn(d => d),
+      create: jest.fn((d) => d),
       save: jest.fn().mockResolvedValue([]),
     };
     alertaRepo = {
       delete: jest.fn().mockResolvedValue(undefined),
-      create: jest.fn(d => d),
+      create: jest.fn((d) => d),
       save: jest.fn().mockResolvedValue([]),
     };
     docenteRepo = { find: jest.fn().mockResolvedValue([]) };
@@ -64,11 +64,15 @@ describe('KddPipelineServicio', () => {
 
     it('genera alertas SIN_EVALUACIONES para docentes sin resultados', async () => {
       const qb = makeQb();
-      qb.getMany.mockResolvedValue([]);
-      evalRepo.createQueryBuilder.mockReturnValue(qb);
-      docenteRepo.find.mockResolvedValue([
-        { id: 1, usuario: { nombre: 'Docente Uno' } },
+      qb.getMany.mockResolvedValue([
+        {
+          id: 1,
+          docenteEvaluado: { id: 1 },
+          estudiantesCompletaron: [10],
+        },
       ]);
+      evalRepo.createQueryBuilder.mockReturnValue(qb);
+      docenteRepo.find.mockResolvedValue([{ id: 1, usuario: { nombre: 'Docente Uno' } }]);
 
       await servicio.ejecutar(1);
 
@@ -81,8 +85,13 @@ describe('KddPipelineServicio', () => {
   describe('listarResultados', () => {
     it('devuelve los resultados del período', async () => {
       const mockResultado = {
-        id: 1, periodoId: 1, docenteId: 2, puntuacionGlobal: 4.2,
-        totalEvaluaciones: 5, detalleDimensiones: { Metodología: 4.2 }, creadoEn: new Date(),
+        id: 1,
+        periodoId: 1,
+        docenteId: 2,
+        puntuacionGlobal: 4.2,
+        totalEvaluaciones: 5,
+        detalleDimensiones: { Metodología: 4.2 },
+        creadoEn: new Date(),
       };
       resultadoRepo.find.mockResolvedValue([mockResultado]);
 

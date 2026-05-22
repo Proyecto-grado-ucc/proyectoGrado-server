@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,8 +11,6 @@ import { RespuestaAuthDto } from './dto/respuesta-auth.dto';
 
 @Injectable()
 export class AuthServicio {
-  private readonly logger = new Logger(AuthServicio.name);
-
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepo: Repository<Usuario>,
@@ -47,7 +40,7 @@ export class AuthServicio {
     const refreshToken = this.firmarRefresco(usuario.id);
 
     const expiracionAcceso = this.calcularExpiracion(
-      this.configService.get<string>('JWT_EXPIRACION', '8h'),
+      this.configService.get<string>('JWT_EXPIRACION', '15m'),
     );
 
     await this.sesionRepo.save(
@@ -66,7 +59,12 @@ export class AuthServicio {
   async refrescar(refreshToken: string): Promise<Pick<RespuestaAuthDto, 'access_token'>> {
     let payload: { sub: number; tipo: string };
     try {
-      payload = this.jwtService.verify<{ sub: number; tipo: string }>(refreshToken);
+      payload = this.jwtService.verify<{ sub: number; tipo: string }>(refreshToken, {
+        secret: this.configService.get<string>(
+          'JWT_REFRESCO_SECRETO',
+          'secreto_refresco_desarrollo',
+        ),
+      });
     } catch {
       throw new UnauthorizedException('Token de refresco inválido o expirado');
     }
@@ -89,10 +87,7 @@ export class AuthServicio {
   }
 
   async logout(usuarioId: number): Promise<void> {
-    await this.sesionRepo.update(
-      { usuario: { id: usuarioId } },
-      { fechaExpiracion: new Date() },
-    );
+    await this.sesionRepo.update({ usuario: { id: usuarioId } }, { fechaExpiracion: new Date() });
   }
 
   async hashContrasena(contrasena: string): Promise<string> {
@@ -103,14 +98,23 @@ export class AuthServicio {
   private firmarAcceso(sub: number, email: string, rol: string): string {
     return this.jwtService.sign(
       { sub, email, rol, tipo: 'acceso' },
-      { expiresIn: this.configService.get<string>('JWT_EXPIRACION', '8h') },
+      { expiresIn: this.configService.get<string>('JWT_EXPIRACION', '15m') },
     );
   }
 
   private firmarRefresco(sub: number): string {
     return this.jwtService.sign(
       { sub, tipo: 'refresco' },
-      { expiresIn: this.configService.get<string>('JWT_EXPIRACION_REFRESH', '7d') },
+      {
+        secret: this.configService.get<string>(
+          'JWT_REFRESCO_SECRETO',
+          'secreto_refresco_desarrollo',
+        ),
+        expiresIn: this.configService.get<string>(
+          'JWT_REFRESCO_EXPIRACION',
+          this.configService.get<string>('JWT_EXPIRACION_REFRESH', '7d'),
+        ),
+      },
     );
   }
 

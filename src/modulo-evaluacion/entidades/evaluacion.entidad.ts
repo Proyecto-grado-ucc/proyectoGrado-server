@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Docente } from '../../compartido/entidades/docente.entidad';
 import { Formulario } from './formulario.entidad';
 
@@ -26,6 +34,20 @@ export class Evaluacion {
 
   @Column({ type: 'enum', enum: EstadoEvaluacion, default: EstadoEvaluacion.Pendiente })
   estado: EstadoEvaluacion;
+
+  @Column({
+    type: 'jsonb',
+    name: 'estudiantes_completaron',
+    default: () => "'[]'::jsonb",
+  })
+  estudiantesCompletaron: number[];
+
+  @Column({
+    type: 'jsonb',
+    name: 'comentarios_anonimos',
+    default: () => "'[]'::jsonb",
+  })
+  comentariosAnonimos: string[];
 
   @CreateDateColumn({ name: 'creado_en', type: 'timestamptz' })
   creadoEn: Date;

@@ -15,6 +15,9 @@ export class Grupo {
   @Column({ type: 'varchar', length: 20 })
   codigo: string;
 
+  @Column({ type: 'varchar', length: 64, name: 'codigo_acceso', unique: true })
+  codigoAcceso: string;
+
   @ManyToOne(() => Curso, { eager: true, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'curso_id' })
   curso: Curso;

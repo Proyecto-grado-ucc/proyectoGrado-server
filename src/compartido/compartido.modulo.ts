@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Grupo } from '../modulo-horarios/entidades/grupo.entidad';
 import { Usuario } from '../seguridad/entidades/usuario.entidad';
 import { SeguridadModulo } from '../seguridad/seguridad.modulo';
 import { DocentesControlador } from './docentes/docentes.controlador';
@@ -14,7 +15,7 @@ import { PeriodosServicio } from './periodos/periodos.servicio';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Docente, Estudiante, PeriodoAcademico, Usuario]),
+    TypeOrmModule.forFeature([Docente, Estudiante, PeriodoAcademico, Usuario, Grupo]),
     SeguridadModulo,
   ],
   providers: [PeriodosServicio, DocentesServicio, EstudiantesServicio],

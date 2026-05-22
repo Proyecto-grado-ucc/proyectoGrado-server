@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Docente } from '../../compartido/entidades/docente.entidad';
-import { Alerta, NivelAlerta } from '../entidades/alerta.entidad';
+import { Alerta } from '../entidades/alerta.entidad';
 import { Evaluacion } from '../entidades/evaluacion.entidad';
 import { ResultadoKdd } from '../entidades/resultado-kdd.entidad';
 import { DashboardServicio } from './dashboard.servicio';
@@ -47,9 +47,7 @@ describe('DashboardServicio', () => {
     });
 
     it('calcula promedio global correctamente', async () => {
-      resultadoRepo.find.mockResolvedValue([
-        { puntuacionGlobal: 4.0 }, { puntuacionGlobal: 3.0 },
-      ]);
+      resultadoRepo.find.mockResolvedValue([{ puntuacionGlobal: 4.0 }, { puntuacionGlobal: 3.0 }]);
 
       const res = await servicio.resumen(1);
       expect(res.promedioGlobal).toBe(3.5);

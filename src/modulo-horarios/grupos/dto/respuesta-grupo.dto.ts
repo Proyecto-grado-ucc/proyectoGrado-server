@@ -4,6 +4,7 @@ import { Jornada } from '../../entidades/grupo.entidad';
 export class RespuestaGrupoDto {
   @ApiProperty() id: number;
   @ApiProperty() codigo: string;
+  @ApiProperty() codigoAcceso: string;
   @ApiProperty() cursoId: number;
   @ApiProperty() cursoNombre: string;
   @ApiProperty() cupoMax: number;

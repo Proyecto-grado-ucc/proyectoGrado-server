@@ -20,7 +20,13 @@ export class GruposServicio {
     const curso = await this.cursoRepo.findOne({ where: { id: dto.cursoId } });
     if (!curso) throw new NotFoundException(`Curso ${dto.cursoId} no encontrado`);
 
-    const grupo = this.grupoRepo.create({ codigo: dto.codigo, curso, cupoMax: dto.cupoMax, jornada: dto.jornada });
+    const grupo = this.grupoRepo.create({
+      codigo: dto.codigo,
+      codigoAcceso: dto.codigoAcceso ?? dto.codigo,
+      curso,
+      cupoMax: dto.cupoMax,
+      jornada: dto.jornada,
+    });
     return this.mapear(await this.grupoRepo.save(grupo));
   }
 
@@ -49,6 +55,7 @@ export class GruposServicio {
       g.curso = curso;
     }
     if (dto.codigo !== undefined) g.codigo = dto.codigo;
+    if (dto.codigoAcceso !== undefined) g.codigoAcceso = dto.codigoAcceso;
     if (dto.cupoMax !== undefined) g.cupoMax = dto.cupoMax;
     if (dto.jornada !== undefined) g.jornada = dto.jornada;
 
@@ -65,6 +72,7 @@ export class GruposServicio {
     return {
       id: g.id,
       codigo: g.codigo,
+      codigoAcceso: g.codigoAcceso,
       cursoId: g.curso.id,
       cursoNombre: g.curso.nombre,
       cupoMax: g.cupoMax,

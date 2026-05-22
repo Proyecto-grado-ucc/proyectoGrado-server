@@ -1,4 +1,11 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PeriodoAcademico } from '../../compartido/entidades/periodo-academico.entidad';
 import { Asignacion } from '../motor/tipos';
 
@@ -25,6 +32,9 @@ export class Horario {
 
   @Column({ type: 'jsonb', nullable: true })
   metadatos: Record<string, unknown> | null;
+
+  @Column({ type: 'boolean', default: false })
+  archivado: boolean;
 
   @CreateDateColumn({ name: 'creado_en', type: 'timestamptz' })
   creadoEn: Date;

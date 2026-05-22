@@ -33,8 +33,15 @@ describe('Salud (e2e)', () => {
   });
 
   it('GET /api/health devuelve Content-Type JSON', () => {
+    return request(app.getHttpServer()).get('/api/health').expect('Content-Type', /json/);
+  });
+
+  it('GET /api/salud devuelve 200 con estado ok', () => {
     return request(app.getHttpServer())
-      .get('/api/health')
-      .expect('Content-Type', /json/);
+      .get('/api/salud')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.estado).toBe('ok');
+      });
   });
 });

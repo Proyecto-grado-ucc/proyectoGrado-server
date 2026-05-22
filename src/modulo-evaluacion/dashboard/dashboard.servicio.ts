@@ -25,7 +25,10 @@ export class DashboardServicio {
           .innerJoin('ev.formulario', 'fm')
           .innerJoin('fm.periodo', 'per')
           .where('per.id = :periodoId', { periodoId })
-          .andWhere('ev.estado = :estado', { estado: EstadoEvaluacion.Completada })
+          .andWhere(
+            `(ev.estado = :estado OR jsonb_array_length(COALESCE(ev.estudiantes_completaron, '[]'::jsonb)) > 0)`,
+            { estado: EstadoEvaluacion.Completada },
+          )
           .getCount(),
         this.resultadoRepo.find({ where: { periodoId } }),
         this.alertaRepo.count({ where: { periodoId, nivel: NivelAlerta.CRITICO } }),
@@ -40,11 +43,11 @@ export class DashboardServicio {
         : 0;
 
     const rangos = ['1.0-2.0', '2.0-3.0', '3.0-4.0', '4.0-5.0'];
-    const distribucionPuntuaciones = rangos.map(rango => {
+    const distribucionPuntuaciones = rangos.map((rango) => {
       const [min, max] = rango.split('-').map(Number);
       return {
         rango,
-        cantidad: resultados.filter(r => r.puntuacionGlobal >= min && r.puntuacionGlobal < max)
+        cantidad: resultados.filter((r) => r.puntuacionGlobal >= min && r.puntuacionGlobal < max)
           .length,
       };
     });

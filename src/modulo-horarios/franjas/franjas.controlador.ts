@@ -23,11 +23,11 @@ import { CrearFranjaDto } from './dto/crear-franja.dto';
 import { RespuestaFranjaDto, RespuestaPaginadaFranjaDto } from './dto/respuesta-franja.dto';
 import { FranjasServicio } from './franjas.servicio';
 
-@ApiTags('franjas-horarias')
+@ApiTags('franjas')
 @ApiBearerAuth()
 @UseGuards(JwtGuardia, RolesGuardia)
 @Roles(RolNombre.Admin)
-@Controller('franjas-horarias')
+@Controller(['franjas', 'franjas-horarias'])
 export class FranjasControlador {
   constructor(private readonly franjasServicio: FranjasServicio) {}
 
