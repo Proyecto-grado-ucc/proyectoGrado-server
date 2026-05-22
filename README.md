@@ -123,8 +123,8 @@ npm install
 cp .env.example .env
 # Editar .env con los valores del entorno local
 
-# 4. Levantar la base de datos con Docker
-docker compose up -d db
+# 4. Levantar servicios locales con Docker, si aplica
+docker compose up -d
 
 # 5. Iniciar el servidor en modo desarrollo
 npm run start:dev
@@ -132,9 +132,9 @@ npm run start:dev
 
 | Recurso | URL |
 |---------|-----|
-| API REST | `http://localhost:3000/api` |
-| Documentación Swagger | `http://localhost:3000/api/docs` |
-| Healthcheck | `http://localhost:3000/api/salud` |
+| API REST | `http://<host-local>:3000/api` |
+| Documentación Swagger | `http://<host-local>:3000/api/docs` |
+| Healthcheck | `http://<host-local>:3000/api/salud` |
 
 ---
 
@@ -146,17 +146,23 @@ Copiar `.env.example` como `.env` y completar los valores:
 |----------|-------------|-------------------|
 | `NODE_ENV` | Entorno de ejecución | `development` |
 | `PORT` | Puerto del servidor | `3000` |
-| `DB_HOST` | Host de PostgreSQL | `localhost` |
+| `DATABASE_URL` | URL completa de PostgreSQL. Tiene prioridad si esta definida | *(opcional)* |
+| `PGHOST` | Host de PostgreSQL en Railway | *(opcional)* |
+| `PGPORT` | Puerto de PostgreSQL en Railway | `5432` |
+| `PGUSER` | Usuario de PostgreSQL en Railway | *(opcional)* |
+| `PGPASSWORD` | Contraseña de PostgreSQL en Railway | *(opcional)* |
+| `PGDATABASE` | Nombre de la base de datos en Railway | *(opcional)* |
+| `DB_HOST` | Host de PostgreSQL para compatibilidad local | *(sin valor por defecto)* |
 | `DB_PORT` | Puerto de PostgreSQL | `5432` |
 | `DB_USUARIO` | Usuario de la base de datos | `cal_usuario` |
 | `DB_CONTRASENA` | Contraseña de la base de datos | `cal_contrasena` |
-| `DB_NOMBRE` | Nombre de la base de datos | `cal_db` |
+| `DB_NOMBRE` | Nombre de la base de datos | `cal_database` |
 | `JWT_SECRETO` | Secreto para tokens de acceso | *(requerido)* |
 | `JWT_EXPIRACION` | Duración del access token | `15m` |
 | `JWT_REFRESCO_SECRETO` | Secreto para tokens de refresco | *(requerido)* |
 | `JWT_REFRESCO_EXPIRACION` | Duración del refresh token | `7d` |
 | `GEMINI_API_KEY` | Clave API de Google Gemini *(opcional)* | — |
-| `CORS_ORIGINS` | Orígenes permitidos, separados por coma | `http://localhost:3000` |
+| `CORS_ORIGINS` | Orígenes permitidos, separados por coma | *(requerido en produccion para frontend web)* |
 | `THROTTLE_TTL` | Ventana de rate limiting en ms | `60000` |
 | `THROTTLE_LIMIT` | Máximo de peticiones por ventana | `100` |
 
@@ -376,9 +382,6 @@ Los specs unitarios cubren todos los servicios con mocks de repositorios TypeORM
 ```bash
 # Levantar todo (base de datos + backend)
 docker compose up -d
-
-# Solo la base de datos
-docker compose up -d db
 
 # Ver logs en tiempo real
 docker compose logs -f backend

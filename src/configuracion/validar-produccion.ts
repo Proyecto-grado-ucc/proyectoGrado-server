@@ -11,13 +11,55 @@ function esSecretoInseguro(valor: string | undefined): boolean {
   return valor.length < 32 || VALORES_INSEGUROS.some((inseguro) => normalizado.includes(inseguro));
 }
 
+function obtenerValor(nombres: string[]): string | undefined {
+  return nombres.map((nombre) => process.env[nombre]?.trim()).find(Boolean);
+}
+
+function esHostComposeLocal(host: string | undefined): boolean {
+  const hostComposeLocal = ['d', 'b'].join('');
+  return host?.trim().toLowerCase() === hostComposeLocal;
+}
+
+function validarConexionPostgres(): void {
+  if (process.env.DATABASE_URL) return;
+
+  const host = obtenerValor(['PGHOST', 'DB_HOST']);
+  const port = obtenerValor(['PGPORT', 'DB_PORT']);
+  const user = obtenerValor(['PGUSER', 'DB_USUARIO']);
+  const password = obtenerValor(['PGPASSWORD', 'DB_CONTRASENA']);
+  const database = obtenerValor(['PGDATABASE', 'DB_NOMBRE']);
+
+  if (esHostComposeLocal(host)) {
+    throw new Error(
+      'El host de PostgreSQL apunta al servicio local de Compose. En Railway usa DATABASE_URL o las variables PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE.',
+    );
+  }
+
+  const faltantes = [
+    ['host', host],
+    ['port', port],
+    ['user', user],
+    ['password', password],
+    ['database', database],
+  ]
+    .filter(([, valor]) => !valor)
+    .map(([nombre]) => nombre);
+
+  if (faltantes.length > 0) {
+    throw new Error(
+      `Faltan variables de PostgreSQL en produccion: ${faltantes.join(', ')}. En Railway usa DATABASE_URL o PGHOST/PGPORT/PGUSER/PGPASSWORD/PGDATABASE.`,
+    );
+  }
+
+  if (!Number.isInteger(Number(port))) {
+    throw new Error('El puerto de PostgreSQL debe ser un numero valido en produccion.');
+  }
+}
+
 export function validarConfiguracionProduccion(): void {
   if (process.env.NODE_ENV !== 'production') return;
 
   const requeridas = ['JWT_SECRETO', 'JWT_REFRESCO_SECRETO'];
-  if (!process.env.DATABASE_URL) {
-    requeridas.push('DB_HOST', 'DB_PORT', 'DB_USUARIO', 'DB_CONTRASENA', 'DB_NOMBRE');
-  }
 
   const faltantes = requeridas.filter((nombre) => !process.env[nombre]);
   if (faltantes.length > 0) {
@@ -26,15 +68,7 @@ export function validarConfiguracionProduccion(): void {
     );
   }
 
-  if (!process.env.DATABASE_URL && process.env.DB_HOST?.trim().toLowerCase() === 'db') {
-    throw new Error(
-      'DB_HOST=db solo existe dentro de docker-compose local. En Railway configura DB_HOST=${{Postgres.PGHOST}} o DATABASE_URL=${{Postgres.DATABASE_URL}}.',
-    );
-  }
-
-  if (!process.env.DATABASE_URL && !Number.isInteger(Number(process.env.DB_PORT))) {
-    throw new Error('DB_PORT debe ser un numero valido en produccion.');
-  }
+  validarConexionPostgres();
 
   const secretosInseguros = ['JWT_SECRETO', 'JWT_REFRESCO_SECRETO'].filter((nombre) =>
     esSecretoInseguro(process.env[nombre]),

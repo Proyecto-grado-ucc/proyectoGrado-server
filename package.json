@@ -16,7 +16,7 @@
     "migration:revert:ts": "typeorm-ts-node-commonjs -d src/data-source.ts migration:revert",
     "migration:show:ts": "typeorm-ts-node-commonjs -d src/data-source.ts migration:show",
     "seed:admin": "node dist/seed-admin.js",
-    "seed:admin:ts": "ts-node -r tsconfig-paths/register src/seed-admin.ts",
+    "seed:admin:ts": "ts-node src/seed-admin.ts",
     "lint": "eslint \"{src,test}/**/*.ts\" --max-warnings 0",
     "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "jest --coverage",
@@ -64,7 +64,6 @@
     "supertest": "^6.3.4",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.3.3"
   },
   "jest": {

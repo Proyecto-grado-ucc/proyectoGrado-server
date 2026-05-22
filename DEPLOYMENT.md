@@ -23,18 +23,18 @@ NODE_ENV=production
 DATABASE_URL=${{Postgres.DATABASE_URL}}
 
 # Alternativa si no se usa DATABASE_URL:
-DB_HOST=${{Postgres.PGHOST}}
-DB_PORT=${{Postgres.PGPORT}}
-DB_USUARIO=${{Postgres.PGUSER}}
-DB_CONTRASENA=${{Postgres.PGPASSWORD}}
-DB_NOMBRE=${{Postgres.PGDATABASE}}
+PGHOST=${{Postgres.PGHOST}}
+PGPORT=${{Postgres.PGPORT}}
+PGUSER=${{Postgres.PGUSER}}
+PGPASSWORD=${{Postgres.PGPASSWORD}}
+PGDATABASE=${{Postgres.PGDATABASE}}
 
 JWT_SECRETO=<valor-aleatorio-de-32-caracteres-o-mas>
 JWT_EXPIRACION=15m
 JWT_REFRESCO_SECRETO=<otro-valor-aleatorio-de-32-caracteres-o-mas>
 JWT_REFRESCO_EXPIRACION=7d
 
-CORS_ORIGINS=https://tu-frontend.example.com,http://localhost:5173
+CORS_ORIGINS=https://tu-frontend.example.com
 THROTTLE_TTL=60000
 THROTTLE_LIMIT=100
 BCRYPT_ROUNDS=12
@@ -48,7 +48,7 @@ GEMINI_API_KEY=<opcional>
 
 No configurar secretos JWT con valores de ejemplo. En `NODE_ENV=production`, el servidor rechaza el arranque si faltan secretos seguros o conexion a base de datos.
 
-`DB_HOST=db` nunca debe usarse en Railway. Ese host solo existe cuando el backend y PostgreSQL corren juntos dentro de `docker-compose.yml` local. En Railway, `DB_HOST` debe apuntar al servicio `Postgres` mediante `${{Postgres.PGHOST}}`, o puedes usar `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+En Railway no se debe usar el nombre del servicio PostgreSQL definido para Compose local. El backend toma primero `DATABASE_URL`; si no existe, toma `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD` y `PGDATABASE` desde el servicio `Postgres`. Las variables `DB_*` se mantienen solo como compatibilidad para entornos locales.
 
 ## 3. Dockerfile en Railway
 
@@ -62,7 +62,7 @@ npm run start
 
 El `Dockerfile` expone el puerto `3000`, pero la aplicacion escucha `process.env.PORT || 3000`, por lo que respeta el puerto dinamico de Railway. No usar `npm run start:dev` en produccion.
 
-`docker-compose.yml`, si existe en la rama, es solo para desarrollo local. No se debe conectar el backend de Railway al host `db` de Compose.
+`docker-compose.yml`, si existe en la rama, es solo para desarrollo local. El backend de Railway debe conectarse unicamente con variables del servicio `Postgres` o `DATABASE_URL`.
 
 ## 4. Migraciones
 

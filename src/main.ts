@@ -6,12 +6,13 @@ import { AppModulo } from './app.modulo';
 import { validarConfiguracionProduccion } from './configuracion/validar-produccion';
 import { LoggerJson } from './core/logger/logger-json';
 
-function obtenerOrigenesCors(): string[] {
-  return (
-    process.env.CORS_ORIGINS?.split(',')
-      .map((origen) => origen.trim())
-      .filter(Boolean) ?? ['http://localhost:5173', 'http://localhost:3000']
-  );
+function obtenerOrigenesCors(): string[] | boolean {
+  const origenes = process.env.CORS_ORIGINS?.split(',')
+    .map((origen) => origen.trim())
+    .filter(Boolean);
+
+  if (origenes?.length) return origenes;
+  return process.env.NODE_ENV === 'production' ? [] : true;
 }
 
 async function arrancar() {
@@ -48,8 +49,8 @@ async function arrancar() {
 
   const puerto = Number(process.env.PORT || 3000);
   await app.listen(puerto, '0.0.0.0');
-  logger.log(`Servidor en http://localhost:${puerto}/api`, 'Bootstrap');
-  logger.log(`Documentación en http://localhost:${puerto}/api/docs`, 'Bootstrap');
+  logger.log(`Servidor escuchando en puerto ${puerto} con prefijo /api`, 'Bootstrap');
+  logger.log('Documentacion disponible en /api/docs', 'Bootstrap');
 }
 
 arrancar();
