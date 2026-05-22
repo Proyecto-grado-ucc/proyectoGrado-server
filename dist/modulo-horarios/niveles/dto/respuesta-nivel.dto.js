@@ -1,0 +1,49 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RespuestaPaginadaNivelDto = exports.RespuestaNivelDto = void 0;
+const swagger_1 = require("@nestjs/swagger");
+const nivel_idioma_entidad_1 = require("../../entidades/nivel-idioma.entidad");
+class RespuestaNivelDto {
+}
+exports.RespuestaNivelDto = RespuestaNivelDto;
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], RespuestaNivelDto.prototype, "id", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ enum: nivel_idioma_entidad_1.CodigoNivel }),
+    __metadata("design:type", String)
+], RespuestaNivelDto.prototype, "codigo", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", String)
+], RespuestaNivelDto.prototype, "nombre", void 0);
+class RespuestaPaginadaNivelDto {
+}
+exports.RespuestaPaginadaNivelDto = RespuestaPaginadaNivelDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ type: [RespuestaNivelDto] }),
+    __metadata("design:type", Array)
+], RespuestaPaginadaNivelDto.prototype, "items", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], RespuestaPaginadaNivelDto.prototype, "total", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], RespuestaPaginadaNivelDto.prototype, "page", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)(),
+    __metadata("design:type", Number)
+], RespuestaPaginadaNivelDto.prototype, "size", void 0);
+//# sourceMappingURL=respuesta-nivel.dto.js.map
