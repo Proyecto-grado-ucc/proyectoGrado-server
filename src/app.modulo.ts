@@ -24,18 +24,40 @@ import { SeguridadModulo } from './seguridad/seguridad.modulo';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('DB_HOST', 'localhost'),
-        port: config.get<number>('DB_PORT', 5432),
-        username: config.get<string>('DB_USUARIO', 'cal_usuario'),
-        password: config.get<string>('DB_CONTRASENA', 'cal_contrasena'),
-        database: config.get<string>('DB_NOMBRE', 'cal_db'),
-        entities: [__dirname + '/**/*.entidad{.ts,.js}'],
-        migrations: [__dirname + '/migraciones/*{.ts,.js}'],
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
-        logging: config.get<string>('NODE_ENV') === 'development',
-      }),
+      useFactory: (config: ConfigService) => {
+        const databaseUrl = config.get<string>('DATABASE_URL');
+        const nodeEnv = config.get<string>('NODE_ENV', 'development');
+        const migrationsRun = config.get<string>(
+          'TYPEORM_MIGRATIONS_RUN',
+          nodeEnv === 'production' ? 'true' : 'false',
+        );
+        const synchronize = config.get<string>(
+          'TYPEORM_SYNC',
+          nodeEnv === 'production' ? 'false' : 'true',
+        );
+
+        return {
+          type: 'postgres',
+          ...(databaseUrl
+            ? { url: databaseUrl }
+            : {
+                host: config.get<string>('DB_HOST', 'localhost'),
+                port: config.get<number>('DB_PORT', 5432),
+                username: config.get<string>('DB_USUARIO', 'cal_usuario'),
+                password: config.get<string>('DB_CONTRASENA', 'cal_contrasena'),
+                database: config.get<string>('DB_NOMBRE', 'cal_db'),
+              }),
+          entities: [__dirname + '/**/*.entidad{.ts,.js}'],
+          migrations: [__dirname + '/migraciones/*{.ts,.js}'],
+          migrationsRun: migrationsRun === 'true',
+          synchronize: synchronize === 'true',
+          logging: nodeEnv === 'development',
+          ssl:
+            config.get<string>('DB_SSL', 'false') === 'true'
+              ? { rejectUnauthorized: false }
+              : false,
+        };
+      },
       inject: [ConfigService],
     }),
     SaludModulo,
@@ -44,8 +66,6 @@ import { SeguridadModulo } from './seguridad/seguridad.modulo';
     ModuloHorariosModulo,
     ModuloEvaluacionModulo,
   ],
-  providers: [
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModulo {}
