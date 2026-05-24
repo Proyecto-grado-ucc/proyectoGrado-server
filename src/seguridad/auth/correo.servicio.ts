@@ -12,18 +12,21 @@ export class CorreoServicio {
     const port = Number(this.config.get<string>('SMTP_PORT', '587'));
     const secure = this.config.get<string>('SMTP_SECURE') === 'true' || port === 465;
 
-    this.transporter = nodemailer.createTransport({
+    const transportOptions = {
       host: this.config.get<string>('SMTP_HOST', 'smtp.gmail.com'),
       port,
       secure,
       connectionTimeout: 8000,
       greetingTimeout: 8000,
       socketTimeout: 8000,
+      family: 4,
       auth: {
         user: this.config.get<string>('SMTP_USER'),
         pass: this.config.get<string>('SMTP_PASS'),
       },
-    });
+    };
+
+    this.transporter = nodemailer.createTransport(transportOptions as any);
   }
 
   async enviarRecuperacionContrasena(
