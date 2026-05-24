@@ -39,6 +39,7 @@ export class CorreoServicio {
     const enlace = `${baseUrl.replace(/\/$/, '')}/nueva-contrasena?token=${token}`;
     const smtpUser = this.config.get<string>('SMTP_USER');
     const smtpPass = this.config.get<string>('SMTP_PASS');
+    const smtpFrom = this.config.get<string>('SMTP_FROM') ?? smtpUser;
 
     if (!smtpUser || !smtpPass) {
       this.logger.warn(
@@ -123,7 +124,7 @@ export class CorreoServicio {
 
     try {
       await this.transporter.sendMail({
-        from: `"Sistema CAL" <${smtpUser}>`,
+        from: `"Sistema CAL" <${smtpFrom}>`,
         to: destinatario,
         subject: 'Restablecer contrasena - Cambridge Academy of Languages',
         html,
