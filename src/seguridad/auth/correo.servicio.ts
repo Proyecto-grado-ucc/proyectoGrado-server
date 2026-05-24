@@ -9,10 +9,13 @@ export class CorreoServicio {
   private transporter: Transporter;
 
   constructor(private readonly config: ConfigService) {
+    const port = Number(this.config.get<string>('SMTP_PORT', '587'));
+    const secure = this.config.get<string>('SMTP_SECURE') === 'true' || port === 465;
+
     this.transporter = nodemailer.createTransport({
       host: this.config.get<string>('SMTP_HOST', 'smtp.gmail.com'),
-      port: this.config.get<number>('SMTP_PORT', 587),
-      secure: false, // TLS
+      port,
+      secure,
       connectionTimeout: 8000,
       greetingTimeout: 8000,
       socketTimeout: 8000,
