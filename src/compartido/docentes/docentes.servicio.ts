@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AuthServicio } from '../../seguridad/auth/auth.servicio';
+import { Rol, RolNombre } from '../../seguridad/entidades/rol.entidad';
 import { Usuario } from '../../seguridad/entidades/usuario.entidad';
 import { Docente } from '../entidades/docente.entidad';
 import { ActualizarDocenteDto } from './dto/actualizar-docente.dto';
@@ -14,11 +21,20 @@ export class DocentesServicio {
     private readonly docenteRepo: Repository<Docente>,
     @InjectRepository(Usuario)
     private readonly usuarioRepo: Repository<Usuario>,
+    @InjectRepository(Rol)
+    private readonly rolRepo: Repository<Rol>,
+    private readonly authServicio: AuthServicio,
   ) {}
 
   async crear(dto: CrearDocenteDto): Promise<RespuestaDocenteDto> {
-    const usuario = await this.usuarioRepo.findOne({ where: { id: dto.usuarioId } });
-    if (!usuario) throw new NotFoundException(`Usuario ${dto.usuarioId} no encontrado`);
+    const usuario = await this.resolverUsuarioDocente(dto);
+
+    const docenteExistente = await this.docenteRepo.findOne({
+      where: { usuario: { id: usuario.id } },
+    });
+    if (docenteExistente) {
+      throw new ConflictException(`El usuario ${usuario.email} ya esta registrado como docente`);
+    }
 
     const docente = this.docenteRepo.create({
       usuario,
@@ -26,6 +42,37 @@ export class DocentesServicio {
       cargaMaximaHoras: dto.cargaMaximaHoras ?? 40,
     });
     return this.mapear(await this.docenteRepo.save(docente));
+  }
+
+  private async resolverUsuarioDocente(dto: CrearDocenteDto): Promise<Usuario> {
+    if (dto.usuarioId !== undefined) {
+      const usuario = await this.usuarioRepo.findOne({ where: { id: dto.usuarioId } });
+      if (!usuario) throw new NotFoundException(`Usuario ${dto.usuarioId} no encontrado`);
+      return usuario;
+    }
+
+    const nombre = dto.usuarioNombre?.trim();
+    const email = dto.usuarioEmail?.trim().toLowerCase();
+    if (!nombre || !email) {
+      throw new BadRequestException('Debe enviar usuarioId o usuarioNombre y usuarioEmail');
+    }
+
+    const existente = await this.usuarioRepo.findOne({ where: { email } });
+    if (existente) return existente;
+
+    const rolDocente = await this.rolRepo.findOne({ where: { nombre: RolNombre.Docente } });
+    if (!rolDocente) throw new NotFoundException(`Rol '${RolNombre.Docente}' no encontrado`);
+
+    const passwordHash = await this.authServicio.hashContrasena('Cambiar123!');
+    return this.usuarioRepo.save(
+      this.usuarioRepo.create({
+        nombre,
+        email,
+        passwordHash,
+        rol: rolDocente,
+        activo: true,
+      }),
+    );
   }
 
   async listar(page: number, size: number): Promise<RespuestaPaginadaDocenteDto> {

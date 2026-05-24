@@ -1,10 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, MaxLength, Min } from 'class-validator';
 
 export class CrearDocenteDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ example: 1, required: false })
   @IsInt()
-  usuarioId: number;
+  @IsOptional()
+  usuarioId?: number;
+
+  @ApiProperty({ example: 'Juan Perez', required: false })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  @IsOptional()
+  usuarioNombre?: string;
+
+  @ApiProperty({ example: 'juan@cal.edu.co', required: false })
+  @IsEmail({}, { message: 'El email no es valido' })
+  @IsOptional()
+  usuarioEmail?: string;
 
   @ApiProperty({ example: 'Inglés Avanzado', required: false, nullable: true })
   @IsString()
