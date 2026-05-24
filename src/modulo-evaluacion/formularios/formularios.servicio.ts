@@ -126,7 +126,7 @@ export class FormulariosServicio {
         .createQueryBuilder()
         .delete()
         .from(Respuesta)
-        .where(`evaluacion_id IN ${evaluacionesSubquery}`, { id })
+        .where(`evaluacion_id IN (${evaluacionesSubquery})`, { id })
         .execute();
 
       await manager
@@ -140,7 +140,7 @@ export class FormulariosServicio {
         .createQueryBuilder()
         .delete()
         .from(Pregunta)
-        .where(`dimension_id IN ${dimensionesSubquery}`, { id })
+        .where(`dimension_id IN (${dimensionesSubquery})`, { id })
         .execute();
 
       await manager
