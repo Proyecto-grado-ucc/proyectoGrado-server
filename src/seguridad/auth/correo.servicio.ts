@@ -40,6 +40,7 @@ export class CorreoServicio {
     const smtpUser = this.config.get<string>('SMTP_USER');
     const smtpPass = this.config.get<string>('SMTP_PASS');
     const smtpFrom = this.config.get<string>('SMTP_FROM') ?? smtpUser;
+    const sendGridApiKey = this.config.get<string>('SENDGRID_API_KEY');
 
     if (!smtpUser || !smtpPass) {
       this.logger.warn(
@@ -122,6 +123,12 @@ export class CorreoServicio {
       </html>
     `;
 
+    if (sendGridApiKey && smtpFrom) {
+      await this.enviarConSendGrid(sendGridApiKey, smtpFrom, destinatario, html);
+      this.logger.log(`Correo de recuperacion enviado a: ${destinatario}`);
+      return;
+    }
+
     try {
       await this.transporter.sendMail({
         from: `"Sistema CAL" <${smtpFrom}>`,
@@ -133,6 +140,33 @@ export class CorreoServicio {
     } catch (error) {
       this.logger.error(`Error enviando correo a ${destinatario}`, error);
       throw error;
+    }
+  }
+
+  private async enviarConSendGrid(
+    apiKey: string,
+    remitente: string,
+    destinatario: string,
+    html: string,
+  ): Promise<void> {
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: destinatario }] }],
+        from: { email: remitente, name: 'Sistema CAL' },
+        reply_to: { email: remitente },
+        subject: 'Restablecer contrasena - Cambridge Academy of Languages',
+        content: [{ type: 'text/html', value: html }],
+      }),
+    });
+
+    if (!response.ok) {
+      const detalle = await response.text();
+      throw new Error(`SendGrid respondio ${response.status}: ${detalle}`);
     }
   }
 }
