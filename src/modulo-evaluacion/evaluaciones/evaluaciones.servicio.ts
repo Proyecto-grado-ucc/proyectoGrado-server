@@ -84,6 +84,8 @@ export class EvaluacionesServicio {
       id: e.id,
       formularioId: e.formulario.id,
       formularioTitulo: e.formulario.titulo,
+      periodoId: e.formulario.periodo.id,
+      periodoNombre: e.formulario.periodo.nombre,
       docenteEvaluadoId: e.docenteEvaluado.id,
       docenteEvaluadoNombre: e.docenteEvaluado.usuario.nombre,
       evaluadorId: e.evaluadorId,

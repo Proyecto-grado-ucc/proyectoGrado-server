@@ -5,6 +5,8 @@ export class RespuestaEvaluacionDto {
   @ApiProperty() id: number;
   @ApiProperty() formularioId: number;
   @ApiProperty() formularioTitulo: string;
+  @ApiProperty() periodoId: number;
+  @ApiProperty() periodoNombre: string;
   @ApiProperty() docenteEvaluadoId: number;
   @ApiProperty() docenteEvaluadoNombre: string;
   @ApiProperty({ nullable: true }) evaluadorId: number | null;

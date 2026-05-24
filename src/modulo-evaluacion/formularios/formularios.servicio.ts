@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PeriodoAcademico } from '../../compartido/entidades/periodo-academico.entidad';
+import { Alerta } from '../entidades/alerta.entidad';
 import { Formulario } from '../entidades/formulario.entidad';
 import { Dimension } from '../entidades/dimension.entidad';
+import { Evaluacion } from '../entidades/evaluacion.entidad';
 import { Pregunta, TipoPregunta } from '../entidades/pregunta.entidad';
+import { ResultadoKdd } from '../entidades/resultado-kdd.entidad';
+import { Respuesta } from '../entidades/respuesta.entidad';
 import { ActualizarFormularioDto } from './dto/actualizar-formulario.dto';
 import { CrearFormularioDto } from './dto/crear-formulario.dto';
 import { RespuestaFormularioDto, RespuestaPaginadaFormularioDto } from './dto/respuesta-formulario.dto';
@@ -16,6 +20,7 @@ export class FormulariosServicio {
     @InjectRepository(PeriodoAcademico) private readonly periodoRepo: Repository<PeriodoAcademico>,
     @InjectRepository(Dimension) private readonly dimensionRepo: Repository<Dimension>,
     @InjectRepository(Pregunta) private readonly preguntaRepo: Repository<Pregunta>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearFormularioDto): Promise<RespuestaFormularioDto> {
@@ -101,7 +106,53 @@ export class FormulariosServicio {
   async eliminar(id: number): Promise<void> {
     const f = await this.formularioRepo.findOne({ where: { id } });
     if (!f) throw new NotFoundException(`Formulario ${id} no encontrado`);
-    await this.formularioRepo.remove(f);
+
+    await this.dataSource.transaction(async (manager) => {
+      const evaluacionesSubquery = manager
+        .createQueryBuilder()
+        .select('ev.id')
+        .from(Evaluacion, 'ev')
+        .where('ev.formulario_id = :id')
+        .getQuery();
+
+      const dimensionesSubquery = manager
+        .createQueryBuilder()
+        .select('dim.id')
+        .from(Dimension, 'dim')
+        .where('dim.formulario_id = :id')
+        .getQuery();
+
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(Respuesta)
+        .where(`evaluacion_id IN ${evaluacionesSubquery}`, { id })
+        .execute();
+
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(Evaluacion)
+        .where('formulario_id = :id', { id })
+        .execute();
+
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(Pregunta)
+        .where(`dimension_id IN ${dimensionesSubquery}`, { id })
+        .execute();
+
+      await manager
+        .createQueryBuilder()
+        .delete()
+        .from(Dimension)
+        .where('formulario_id = :id', { id })
+        .execute();
+      await manager.delete(ResultadoKdd, { periodoId: f.periodo.id });
+      await manager.delete(Alerta, { periodoId: f.periodo.id });
+      await manager.delete(Formulario, { id });
+    });
   }
 
   private mapear(f: Formulario): RespuestaFormularioDto {
