@@ -13,6 +13,9 @@ export class CorreoServicio {
       host: this.config.get<string>('SMTP_HOST', 'smtp.gmail.com'),
       port: this.config.get<number>('SMTP_PORT', 587),
       secure: false, // TLS
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 8000,
       auth: {
         user: this.config.get<string>('SMTP_USER'),
         pass: this.config.get<string>('SMTP_PASS'),
@@ -25,9 +28,18 @@ export class CorreoServicio {
     nombre: string,
     token: string,
   ): Promise<void> {
-    const baseUrl = this.config.get<string>('APP_URL', 'http://localhost:5173');
-    const enlace = `${baseUrl}/restablecer-contrasena?token=${token}`;
+    const baseUrl = this.config.get<string>('FRONTEND_URL')
+      ?? this.config.get<string>('APP_URL', 'http://localhost:5173');
+    const enlace = `${baseUrl.replace(/\/$/, '')}/nueva-contrasena?token=${token}`;
     const smtpUser = this.config.get<string>('SMTP_USER');
+    const smtpPass = this.config.get<string>('SMTP_PASS');
+
+    if (!smtpUser || !smtpPass) {
+      this.logger.warn(
+        `SMTP no configurado. Enlace de recuperacion para ${destinatario}: ${enlace}`,
+      );
+      return;
+    }
 
     const html = `
       <!DOCTYPE html>
