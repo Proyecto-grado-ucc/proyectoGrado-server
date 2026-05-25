@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { Curso } from '../entidades/curso.entidad';
 import { Grupo, Jornada } from '../entidades/grupo.entidad';
 import { CodigoNivel, NivelIdioma } from '../entidades/nivel-idioma.entidad';
@@ -19,6 +20,8 @@ describe('GruposServicio', () => {
   let servicio: GruposServicio;
   let grupoRepo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
   let cursoRepo: { findOne: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     grupoRepo = {
@@ -29,12 +32,15 @@ describe('GruposServicio', () => {
       remove: jest.fn(),
     };
     cursoRepo = { findOne: jest.fn() };
+    manager = { query: jest.fn(), delete: jest.fn() };
+    dataSource = { transaction: jest.fn(async (callback) => callback(manager)) };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         GruposServicio,
         { provide: getRepositoryToken(Grupo), useValue: grupoRepo },
         { provide: getRepositoryToken(Curso), useValue: cursoRepo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
 
@@ -68,8 +74,10 @@ describe('GruposServicio', () => {
   describe('eliminar', () => {
     it('elimina correctamente', async () => {
       grupoRepo.findOne.mockResolvedValue(mockGrupo());
-      grupoRepo.remove.mockResolvedValue(undefined);
       await expect(servicio.eliminar(1)).resolves.not.toThrow();
+      expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(manager.query).toHaveBeenCalledWith('UPDATE estudiante SET grupo_id = NULL WHERE grupo_id = $1', [1]);
+      expect(manager.delete).toHaveBeenCalledWith(Grupo, { id: 1 });
     });
   });
 });

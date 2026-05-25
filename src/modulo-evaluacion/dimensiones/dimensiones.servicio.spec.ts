@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { Dimension } from '../entidades/dimension.entidad';
 import { Formulario } from '../entidades/formulario.entidad';
 import { DimensionesServicio } from './dimensiones.servicio';
@@ -12,16 +13,21 @@ describe('DimensionesServicio', () => {
   let servicio: DimensionesServicio;
   let dimensionRepo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
   let formularioRepo: { findOne: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     dimensionRepo = { findOne: jest.fn(), findAndCount: jest.fn(), create: jest.fn(), save: jest.fn(), remove: jest.fn() };
     formularioRepo = { findOne: jest.fn() };
+    manager = { query: jest.fn(), delete: jest.fn() };
+    dataSource = { transaction: jest.fn(async (callback) => callback(manager)) };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         DimensionesServicio,
         { provide: getRepositoryToken(Dimension), useValue: dimensionRepo },
         { provide: getRepositoryToken(Formulario), useValue: formularioRepo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
     servicio = modulo.get(DimensionesServicio);
@@ -48,7 +54,9 @@ describe('DimensionesServicio', () => {
 
   it('eliminar funciona correctamente', async () => {
     dimensionRepo.findOne.mockResolvedValue(mockDimension());
-    dimensionRepo.remove.mockResolvedValue(undefined);
     await expect(servicio.eliminar(1)).resolves.not.toThrow();
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(manager.query).toHaveBeenCalledWith('DELETE FROM pregunta WHERE dimension_id = $1', [1]);
+    expect(manager.delete).toHaveBeenCalledWith(Dimension, { id: 1 });
   });
 });

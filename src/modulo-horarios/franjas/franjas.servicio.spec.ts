@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { DiaSemana, FranjaHoraria } from '../entidades/franja-horaria.entidad';
 import { FranjasServicio } from './franjas.servicio';
 
@@ -10,6 +11,8 @@ const mockFranja = (): FranjaHoraria =>
 describe('FranjasServicio', () => {
   let servicio: FranjasServicio;
   let repo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     repo = {
@@ -19,11 +22,14 @@ describe('FranjasServicio', () => {
       save: jest.fn(),
       remove: jest.fn(),
     };
+    manager = { query: jest.fn(), delete: jest.fn() };
+    dataSource = { transaction: jest.fn(async (callback) => callback(manager)) };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         FranjasServicio,
         { provide: getRepositoryToken(FranjaHoraria), useValue: repo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
 
@@ -59,8 +65,10 @@ describe('FranjasServicio', () => {
   describe('eliminar', () => {
     it('elimina correctamente', async () => {
       repo.findOne.mockResolvedValue(mockFranja());
-      repo.remove.mockResolvedValue(undefined);
       await expect(servicio.eliminar(1)).resolves.not.toThrow();
+      expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(manager.query).toHaveBeenCalledWith('DELETE FROM disponibilidad WHERE franja_horaria_id = $1', [1]);
+      expect(manager.delete).toHaveBeenCalledWith(FranjaHoraria, { id: 1 });
     });
   });
 });

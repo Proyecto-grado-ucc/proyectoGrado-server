@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Dimension } from '../entidades/dimension.entidad';
 import { Formulario } from '../entidades/formulario.entidad';
 import { ActualizarDimensionDto } from './dto/actualizar-dimension.dto';
@@ -12,6 +12,7 @@ export class DimensionesServicio {
   constructor(
     @InjectRepository(Dimension) private readonly dimensionRepo: Repository<Dimension>,
     @InjectRepository(Formulario) private readonly formularioRepo: Repository<Formulario>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearDimensionDto): Promise<RespuestaDimensionDto> {
@@ -49,7 +50,18 @@ export class DimensionesServicio {
   async eliminar(id: number): Promise<void> {
     const d = await this.dimensionRepo.findOne({ where: { id } });
     if (!d) throw new NotFoundException(`Dimensión ${id} no encontrada`);
-    await this.dimensionRepo.remove(d);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
+        `DELETE FROM respuesta
+         WHERE pregunta_id IN (
+           SELECT id FROM pregunta WHERE dimension_id = $1
+         )`,
+        [id],
+      );
+      await manager.query('DELETE FROM pregunta WHERE dimension_id = $1', [id]);
+      await manager.delete(Dimension, { id });
+    });
   }
 
   private mapear(d: Dimension): RespuestaDimensionDto {

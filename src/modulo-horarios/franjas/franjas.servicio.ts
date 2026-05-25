@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { FranjaHoraria } from '../entidades/franja-horaria.entidad';
 import { ActualizarFranjaDto } from './dto/actualizar-franja.dto';
 import { CrearFranjaDto } from './dto/crear-franja.dto';
@@ -11,6 +11,7 @@ export class FranjasServicio {
   constructor(
     @InjectRepository(FranjaHoraria)
     private readonly franjaRepo: Repository<FranjaHoraria>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearFranjaDto): Promise<RespuestaFranjaDto> {
@@ -43,7 +44,20 @@ export class FranjasServicio {
   async eliminar(id: number): Promise<void> {
     const f = await this.franjaRepo.findOne({ where: { id } });
     if (!f) throw new NotFoundException(`Franja horaria ${id} no encontrada`);
-    await this.franjaRepo.remove(f);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
+        `DELETE FROM horario
+         WHERE EXISTS (
+           SELECT 1
+           FROM jsonb_array_elements(asignaciones) AS asignacion
+           WHERE (asignacion->>'franjaId')::int = $1
+         )`,
+        [id],
+      );
+      await manager.query('DELETE FROM disponibilidad WHERE franja_horaria_id = $1', [id]);
+      await manager.delete(FranjaHoraria, { id });
+    });
   }
 
   private mapear(f: FranjaHoraria): RespuestaFranjaDto {

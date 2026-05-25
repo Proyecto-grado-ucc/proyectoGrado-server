@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Curso } from '../entidades/curso.entidad';
 import { Grupo } from '../entidades/grupo.entidad';
 import { ActualizarGrupoDto } from './dto/actualizar-grupo.dto';
@@ -14,6 +14,7 @@ export class GruposServicio {
     private readonly grupoRepo: Repository<Grupo>,
     @InjectRepository(Curso)
     private readonly cursoRepo: Repository<Curso>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearGrupoDto): Promise<RespuestaGrupoDto> {
@@ -59,7 +60,20 @@ export class GruposServicio {
   async eliminar(id: number): Promise<void> {
     const g = await this.grupoRepo.findOne({ where: { id } });
     if (!g) throw new NotFoundException(`Grupo ${id} no encontrado`);
-    await this.grupoRepo.remove(g);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
+        `DELETE FROM horario
+         WHERE EXISTS (
+           SELECT 1
+           FROM jsonb_array_elements(asignaciones) AS asignacion
+           WHERE (asignacion->>'grupoId')::int = $1
+         )`,
+        [id],
+      );
+      await manager.query('UPDATE estudiante SET grupo_id = NULL WHERE grupo_id = $1', [id]);
+      await manager.delete(Grupo, { id });
+    });
   }
 
   private mapear(g: Grupo): RespuestaGrupoDto {

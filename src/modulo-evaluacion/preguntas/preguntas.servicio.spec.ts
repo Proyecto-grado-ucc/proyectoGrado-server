@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { Dimension } from '../entidades/dimension.entidad';
 import { Pregunta, TipoPregunta } from '../entidades/pregunta.entidad';
 import { PreguntasServicio } from './preguntas.servicio';
@@ -12,16 +13,21 @@ describe('PreguntasServicio', () => {
   let servicio: PreguntasServicio;
   let preguntaRepo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
   let dimensionRepo: { findOne: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     preguntaRepo = { findOne: jest.fn(), findAndCount: jest.fn(), create: jest.fn(), save: jest.fn(), remove: jest.fn() };
     dimensionRepo = { findOne: jest.fn() };
+    manager = { query: jest.fn(), delete: jest.fn() };
+    dataSource = { transaction: jest.fn(async (callback) => callback(manager)) };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         PreguntasServicio,
         { provide: getRepositoryToken(Pregunta), useValue: preguntaRepo },
         { provide: getRepositoryToken(Dimension), useValue: dimensionRepo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
     servicio = modulo.get(PreguntasServicio);
@@ -48,7 +54,9 @@ describe('PreguntasServicio', () => {
 
   it('eliminar funciona correctamente', async () => {
     preguntaRepo.findOne.mockResolvedValue(mockPregunta());
-    preguntaRepo.remove.mockResolvedValue(undefined);
     await expect(servicio.eliminar(1)).resolves.not.toThrow();
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(manager.query).toHaveBeenCalledWith('DELETE FROM respuesta WHERE pregunta_id = $1', [1]);
+    expect(manager.delete).toHaveBeenCalledWith(Pregunta, { id: 1 });
   });
 });

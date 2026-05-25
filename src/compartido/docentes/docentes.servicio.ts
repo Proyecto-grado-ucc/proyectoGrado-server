@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { AuthServicio } from '../../seguridad/auth/auth.servicio';
 import { Rol, RolNombre } from '../../seguridad/entidades/rol.entidad';
 import { Usuario } from '../../seguridad/entidades/usuario.entidad';
@@ -24,6 +24,7 @@ export class DocentesServicio {
     @InjectRepository(Rol)
     private readonly rolRepo: Repository<Rol>,
     private readonly authServicio: AuthServicio,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearDocenteDto): Promise<RespuestaDocenteDto> {
@@ -107,7 +108,30 @@ export class DocentesServicio {
   async eliminar(id: number): Promise<void> {
     const d = await this.docenteRepo.findOne({ where: { id } });
     if (!d) throw new NotFoundException(`Docente ${id} no encontrado`);
-    await this.docenteRepo.remove(d);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
+        `DELETE FROM horario
+         WHERE EXISTS (
+           SELECT 1
+           FROM jsonb_array_elements(asignaciones) AS asignacion
+           WHERE (asignacion->>'docenteId')::int = $1
+         )`,
+        [id],
+      );
+      await manager.query('DELETE FROM disponibilidad WHERE docente_id = $1', [id]);
+      await manager.query(
+        `DELETE FROM respuesta
+         WHERE evaluacion_id IN (
+           SELECT id FROM evaluacion WHERE docente_evaluado_id = $1
+         )`,
+        [id],
+      );
+      await manager.query('DELETE FROM evaluacion WHERE docente_evaluado_id = $1', [id]);
+      await manager.query('DELETE FROM resultado_kdd WHERE docente_id = $1', [id]);
+      await manager.query('DELETE FROM alerta WHERE docente_id = $1', [id]);
+      await manager.delete(Docente, { id });
+    });
   }
 
   private mapear(d: Docente): RespuestaDocenteDto {

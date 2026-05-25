@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { Docente } from '../../compartido/entidades/docente.entidad';
 import { Evaluacion, EstadoEvaluacion } from '../entidades/evaluacion.entidad';
 import { Formulario } from '../entidades/formulario.entidad';
@@ -15,11 +16,15 @@ describe('EvaluacionesServicio', () => {
   let evalRepo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
   let formularioRepo: { findOne: jest.Mock };
   let docenteRepo: { findOne: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     evalRepo = { findOne: jest.fn(), findAndCount: jest.fn(), create: jest.fn(), save: jest.fn(), remove: jest.fn() };
     formularioRepo = { findOne: jest.fn() };
     docenteRepo = { findOne: jest.fn() };
+    manager = { query: jest.fn(), delete: jest.fn() };
+    dataSource = { transaction: jest.fn(async (callback) => callback(manager)) };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
@@ -27,6 +32,7 @@ describe('EvaluacionesServicio', () => {
         { provide: getRepositoryToken(Evaluacion), useValue: evalRepo },
         { provide: getRepositoryToken(Formulario), useValue: formularioRepo },
         { provide: getRepositoryToken(Docente), useValue: docenteRepo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
     servicio = modulo.get(EvaluacionesServicio);
@@ -69,7 +75,9 @@ describe('EvaluacionesServicio', () => {
 
   it('eliminar funciona correctamente', async () => {
     evalRepo.findOne.mockResolvedValue(mockEval());
-    evalRepo.remove.mockResolvedValue(undefined);
     await expect(servicio.eliminar(1)).resolves.not.toThrow();
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(manager.query).toHaveBeenCalledWith('DELETE FROM respuesta WHERE evaluacion_id = $1', [1]);
+    expect(manager.delete).toHaveBeenCalledWith(Evaluacion, { id: 1 });
   });
 });

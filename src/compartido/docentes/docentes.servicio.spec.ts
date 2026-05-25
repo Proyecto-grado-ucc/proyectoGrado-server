@@ -1,6 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
+import { AuthServicio } from '../../seguridad/auth/auth.servicio';
+import { Rol } from '../../seguridad/entidades/rol.entidad';
 import { Usuario } from '../../seguridad/entidades/usuario.entidad';
 import { Docente } from '../entidades/docente.entidad';
 import { DocentesServicio } from './docentes.servicio';
@@ -15,6 +18,10 @@ describe('DocentesServicio', () => {
   let servicio: DocentesServicio;
   let docenteRepo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
   let usuarioRepo: { findOne: jest.Mock };
+  let rolRepo: { findOne: jest.Mock };
+  let authServicio: { hashContrasena: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     docenteRepo = {
@@ -25,12 +32,19 @@ describe('DocentesServicio', () => {
       remove: jest.fn(),
     };
     usuarioRepo = { findOne: jest.fn() };
+    rolRepo = { findOne: jest.fn() };
+    authServicio = { hashContrasena: jest.fn() };
+    manager = { query: jest.fn(), delete: jest.fn() };
+    dataSource = { transaction: jest.fn(async (callback) => callback(manager)) };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         DocentesServicio,
         { provide: getRepositoryToken(Docente), useValue: docenteRepo },
         { provide: getRepositoryToken(Usuario), useValue: usuarioRepo },
+        { provide: getRepositoryToken(Rol), useValue: rolRepo },
+        { provide: AuthServicio, useValue: authServicio },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
 
@@ -88,8 +102,10 @@ describe('DocentesServicio', () => {
   describe('eliminar', () => {
     it('elimina correctamente', async () => {
       docenteRepo.findOne.mockResolvedValue(mockDocente());
-      docenteRepo.remove.mockResolvedValue(undefined);
       await expect(servicio.eliminar(1)).resolves.not.toThrow();
+      expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(manager.query).toHaveBeenCalledWith('DELETE FROM disponibilidad WHERE docente_id = $1', [1]);
+      expect(manager.delete).toHaveBeenCalledWith(Docente, { id: 1 });
     });
 
     it('lanza NotFoundException si no existe', async () => {
