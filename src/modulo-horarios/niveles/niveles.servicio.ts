@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { NivelIdioma } from '../entidades/nivel-idioma.entidad';
 import { ActualizarNivelDto } from './dto/actualizar-nivel.dto';
 import { CrearNivelDto } from './dto/crear-nivel.dto';
@@ -11,6 +11,7 @@ export class NivelesServicio {
   constructor(
     @InjectRepository(NivelIdioma)
     private readonly nivelRepo: Repository<NivelIdioma>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearNivelDto): Promise<RespuestaNivelDto> {
@@ -52,7 +53,40 @@ export class NivelesServicio {
   async eliminar(id: number): Promise<void> {
     const n = await this.nivelRepo.findOne({ where: { id } });
     if (!n) throw new NotFoundException(`Nivel ${id} no encontrado`);
-    await this.nivelRepo.remove(n);
+
+    await this.dataSource.transaction(async (manager) => {
+      const grupos = await manager.query(
+        `SELECT g.id
+         FROM grupo g
+         INNER JOIN curso c ON c.id = g.curso_id
+         WHERE c.nivel_id = $1`,
+        [id],
+      ) as { id: number }[];
+      const grupoIds = grupos.map((g) => g.id);
+
+      if (grupoIds.length > 0) {
+        await manager.query(
+          `DELETE FROM horario
+           WHERE EXISTS (
+             SELECT 1
+             FROM jsonb_array_elements(asignaciones) AS asignacion
+             WHERE (asignacion->>'grupoId')::int = ANY($1::int[])
+           )`,
+          [grupoIds],
+        );
+        await manager.query('UPDATE estudiante SET grupo_id = NULL WHERE grupo_id = ANY($1::int[])', [grupoIds]);
+      }
+
+      await manager.query(
+        `DELETE FROM grupo
+         WHERE curso_id IN (
+           SELECT id FROM curso WHERE nivel_id = $1
+         )`,
+        [id],
+      );
+      await manager.query('DELETE FROM curso WHERE nivel_id = $1', [id]);
+      await manager.delete(NivelIdioma, { id });
+    });
   }
 
   private mapear(n: NivelIdioma): RespuestaNivelDto {
