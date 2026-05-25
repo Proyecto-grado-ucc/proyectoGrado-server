@@ -1,16 +1,16 @@
 flowchart TD
-  A[Estudiante inicia sesion] --> B[Abre modulo Mi Horario]
-  B --> C{Tiene grupo asignado?}
-  C -- Si --> D[Consultar horario del grupo]
-  C -- No --> E[Ingresar codigo de acceso]
-  E --> F[Frontend envia POST /api/estudiantes/matricular]
-  F --> G[Backend busca grupo por codigoAcceso]
-  G --> H{Grupo existe y tiene cupo?}
-  H -- No --> I[Mostrar error de codigo o cupo]
-  H -- Si --> J[Asignar grupo_id al estudiante]
-  J --> K[Consultar horario activo del periodo]
-  K --> L[Mostrar horario del estudiante]
-  D --> L
+  A["Login estudiante"] --> B["Mi horario"]
+  B --> C{"Tiene grupo"}
+  C -- "Si" --> D["Consultar horario"]
+  C -- "No" --> E["Ingresar codigo"]
+  E --> F["POST /estudiantes/matricular"]
+  F --> G["Buscar grupo"]
+  G --> H{"Valido y con cupo"}
+  H -- "No" --> I["Mostrar error"]
+  H -- "Si" --> J["Asignar grupo"]
+  J --> K["Consultar horario"]
+  D --> L["Mostrar horario"]
+  K --> L
 
   classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
   classDef warn fill:#fee2e2,stroke:#dc2626,color:#7f1d1d

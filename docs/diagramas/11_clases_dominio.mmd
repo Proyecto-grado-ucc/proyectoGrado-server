@@ -1,122 +1,74 @@
 classDiagram
   class Usuario {
-    +number id
-    +string nombre
-    +string email
-    +boolean activo
+    +id
+    +email
+    +activo
   }
   class Rol {
-    +number id
-    +RolNombre nombre
+    +id
+    +nombre
   }
   class Docente {
-    +number id
-    +string especialidad
-    +number cargaMaximaHoras
+    +id
+    +especialidad
   }
   class Estudiante {
-    +number id
-    +number grupoId
+    +id
+    +grupoId
   }
   class PeriodoAcademico {
-    +number id
-    +string nombre
-    +Date fechaInicio
-    +Date fechaFin
-  }
-  class NivelIdioma {
-    +number id
-    +CodigoNivel codigo
-    +string nombre
+    +id
+    +nombre
   }
   class Curso {
-    +number id
-    +string nombre
-    +number intensidadHoraria
+    +id
+    +nombre
   }
   class Grupo {
-    +number id
-    +string codigo
-    +number cupoMax
-    +Jornada jornada
-    +string codigoAcceso
-  }
-  class Aula {
-    +number id
-    +string codigo
-    +number capacidad
-    +TipoAula tipo
-    +boolean activa
-  }
-  class FranjaHoraria {
-    +number id
-    +DiaSemana diaSemana
-    +string horaInicio
-    +string horaFin
-    +number bloqueIdx
-  }
-  class Disponibilidad {
-    +number id
-    +boolean disponible
+    +id
+    +codigo
   }
   class Horario {
-    +number id
-    +Asignacion[] asignaciones
-    +number fitness
-    +number conflictos
-    +boolean archivado
+    +id
+    +fitness
+    +archivado
   }
   class Formulario {
-    +number id
-    +string titulo
-    +string descripcion
-    +boolean activo
+    +id
+    +titulo
   }
   class Dimension {
-    +number id
-    +string nombre
-    +number peso
+    +id
+    +peso
   }
   class Pregunta {
-    +number id
-    +string texto
-    +TipoPregunta tipo
-    +number ordenIdx
+    +id
+    +tipo
   }
   class Evaluacion {
-    +number id
-    +EstadoEvaluacion estado
-    +number[] estudiantesCompletaron
-    +string[] comentariosAnonimos
+    +id
+    +estado
   }
   class Respuesta {
-    +number id
-    +number valorNumerico
-    +string valorTexto
+    +id
+    +valor
   }
   class ResultadoKdd {
-    +number id
-    +number puntuacionGlobal
-    +number totalEvaluaciones
+    +id
+    +puntaje
   }
   class Alerta {
-    +number id
-    +TipoAlerta tipo
-    +NivelAlerta nivel
-    +string mensaje
-    +boolean leida
+    +id
+    +nivel
   }
 
   Rol "1" --> "0..*" Usuario
   Usuario "1" --> "0..1" Docente
   Usuario "1" --> "0..1" Estudiante
-  NivelIdioma "1" --> "0..*" Curso
   Curso "1" --> "0..*" Grupo
   Grupo "1" --> "0..*" Estudiante
   PeriodoAcademico "1" --> "0..*" Horario
   PeriodoAcademico "1" --> "0..*" Formulario
-  Docente "1" --> "0..*" Disponibilidad
-  FranjaHoraria "1" --> "0..*" Disponibilidad
   Formulario "1" --> "1..*" Dimension
   Dimension "1" --> "1..*" Pregunta
   Formulario "1" --> "0..*" Evaluacion

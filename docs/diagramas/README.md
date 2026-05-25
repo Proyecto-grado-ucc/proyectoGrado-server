@@ -2,6 +2,8 @@
 
 Este directorio contiene los diecisiete diagramas Mermaid referenciados en el Capitulo 6 y en el Anexo B del documento de tesis.
 
+Los criterios de simplificacion y legibilidad aplicados estan documentados en `criterios_legibilidad.md`.
+
 | Figura | Archivo | Tipo | Proposito |
 | --- | --- | --- | --- |
 | 6.1 | `01_c4_contexto_sistema.mmd` | C4 Context | Contexto de actores externos y sistemas integrados. |

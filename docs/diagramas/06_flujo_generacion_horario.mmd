@@ -1,17 +1,17 @@
 flowchart TD
-  A[Administrador selecciona periodo] --> B[Solicita generar horario]
-  B --> C[API valida autenticacion y rol]
-  C --> D[Cargar datos maestros]
-  D --> E{Datos minimos completos?}
-  E -- No --> F[Retornar error con datos faltantes]
-  E -- Si --> G[Archivar horarios activos si aplica]
-  G --> H[Construir entrada del motor IA]
-  H --> I[Ejecutar algoritmo genetico]
-  I --> J[Mejorar solucion con busqueda tabu]
-  J --> K[Calcular fitness y conflictos]
-  K --> L[Persistir horario en PostgreSQL]
-  L --> M[Retornar resultado al frontend]
-  M --> N[Dashboard muestra horario generado]
+  A["Seleccionar periodo"] --> B["Generar horario"]
+  B --> C["Validar rol"]
+  C --> D["Cargar datos"]
+  D --> E{"Datos completos"}
+  E -- "No" --> F["Reportar faltantes"]
+  E -- "Si" --> G["Preparar entrada IA"]
+  G --> H["Algoritmo genetico"]
+  H --> I["Busqueda tabu"]
+  I --> J["Calcular metricas"]
+  J --> K["Guardar horario"]
+  K --> L["Mostrar resultado"]
 
-  classDef terminal fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
-  class F,N terminal
+  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
+  classDef warn fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  class L ok
+  class F warn

@@ -1,47 +1,49 @@
 flowchart LR
-  Admin([Administrador])
-  Docente([Docente])
-  Estudiante([Estudiante])
-
-  subgraph CAL[Sistema CAL]
-    UC1((Autenticarse))
-    UC2((Gestionar usuarios))
-    UC3((Gestionar datos maestros))
-    UC4((Generar horario con IA))
-    UC5((Consultar horarios))
-    UC6((Crear formularios))
-    UC7((Asignar evaluaciones))
-    UC8((Responder evaluacion))
-    UC9((Ejecutar KDD))
-    UC10((Consultar dashboard))
-    UC11((Consultar auditoria))
-    UC12((Recuperar contrasena))
-    UC13((Inscribirse a grupo))
+  subgraph A["Administrador"]
+    Admin["Actor"]
+    A0(("Autenticarse"))
+    A1(("Usuarios"))
+    A2(("Datos maestros"))
+    A3(("Horarios IA"))
+    A4(("Formularios"))
+    A5(("Asignaciones"))
+    A6(("KDD"))
+    A7(("Auditoria"))
   end
 
-  Admin --> UC1
-  Admin --> UC2
-  Admin --> UC3
-  Admin --> UC4
-  Admin --> UC5
-  Admin --> UC6
-  Admin --> UC7
-  Admin --> UC9
-  Admin --> UC10
-  Admin --> UC11
-  Admin --> UC12
+  subgraph D["Docente"]
+    Docente["Actor"]
+    D0(("Autenticarse"))
+    D1(("Consultar horario"))
+    D2(("Dashboard"))
+    D3(("Recuperar clave"))
+  end
 
-  Docente --> UC1
-  Docente --> UC5
-  Docente --> UC10
-  Docente --> UC12
+  subgraph E["Estudiante"]
+    Estudiante["Actor"]
+    E0(("Autenticarse"))
+    E1(("Consultar horario"))
+    E2(("Responder evaluacion"))
+    E3(("Inscripcion grupo"))
+    E4(("Recuperar clave"))
+  end
 
-  Estudiante --> UC1
-  Estudiante --> UC5
-  Estudiante --> UC8
-  Estudiante --> UC12
-  Estudiante --> UC13
+  Admin --> A0
+  Admin --> A1
+  Admin --> A2
+  Admin --> A3
+  Admin --> A4
+  Admin --> A5
+  Admin --> A6
+  Admin --> A7
 
-  UC4 -. incluye .-> UC3
-  UC7 -. requiere .-> UC6
-  UC9 -. requiere .-> UC8
+  Docente --> D0
+  Docente --> D1
+  Docente --> D2
+  Docente --> D3
+
+  Estudiante --> E0
+  Estudiante --> E1
+  Estudiante --> E2
+  Estudiante --> E3
+  Estudiante --> E4

@@ -1,21 +1,21 @@
 C4Context
-title Figura 6.1. Diagrama de Contexto del Sistema CAL (Nivel 0)
+title Figura 6.1. Contexto del Sistema CAL
 
-Person(admin, "Administrador", "Gestiona usuarios, datos maestros, horarios, formularios, asignaciones y analitica.")
-Person(docente, "Docente", "Consulta su horario y resultados de evaluacion docente.")
-Person(estudiante, "Estudiante", "Consulta horario, se inscribe a grupos y responde evaluaciones.")
+Person(admin, "Administrador", "Opera la gestion academica.")
+Person(docente, "Docente", "Consulta horario y resultados.")
+Person(estudiante, "Estudiante", "Consulta horario y evalua docentes.")
 
-System(cal, "Sistema CAL", "Plataforma web para gestion academica, generacion de horarios con IA y evaluacion docente.")
+System(cal, "Sistema CAL", "Gestion academica, horarios IA y evaluacion docente.")
 
-System_Ext(sendgrid, "SendGrid", "Servicio de correo para recuperacion de contrasena.")
-System_Ext(gemini, "Google Gemini AI", "Servicio externo usado como apoyo para sugerencias del motor de horarios.")
-System_Ext(aws, "AWS", "Infraestructura productiva: Amplify, API Gateway, Elastic Beanstalk y PostgreSQL.")
+System_Ext(sendgrid, "SendGrid", "Correo transaccional.")
+System_Ext(gemini, "Gemini AI", "Apoyo de IA.")
+System_Ext(aws, "AWS", "Infraestructura productiva.")
 
-Rel(admin, cal, "Administra procesos academicos", "HTTPS")
-Rel(docente, cal, "Consulta horario y retroalimentacion", "HTTPS")
-Rel(estudiante, cal, "Consulta horario y responde evaluaciones", "HTTPS")
-Rel(cal, sendgrid, "Envia correos transaccionales", "HTTPS/API")
-Rel(cal, gemini, "Solicita apoyo de IA generativa", "HTTPS/API")
-Rel(cal, aws, "Se ejecuta en infraestructura cloud", "AWS Managed Services")
+Rel(admin, cal, "Administra")
+Rel(docente, cal, "Consulta")
+Rel(estudiante, cal, "Usa")
+Rel(cal, sendgrid, "Envia correo")
+Rel(cal, gemini, "Solicita apoyo IA")
+Rel(cal, aws, "Se despliega en")
 
 UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")

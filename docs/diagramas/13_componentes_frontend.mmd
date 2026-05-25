@@ -1,51 +1,38 @@
 flowchart TD
-  A[main.tsx] --> B[App.tsx]
-  B --> C[BrowserRouter]
-  C --> D[RutaProtegida]
-  C --> L[Login]
-  C --> R[Recuperar / Restablecer contrasena]
-  C --> S[Status]
+  A["main.tsx"] --> B["App.tsx"]
+  B --> C["React Router"]
+  C --> D["RutaProtegida"]
+  C --> P["Paginas publicas"]
 
-  D --> Admin[LayoutAdmin]
-  D --> Doc[LayoutDocente]
-  D --> Est[LayoutEstudiante]
+  D --> Admin["Modulo Admin"]
+  D --> Doc["Modulo Docente"]
+  D --> Est["Modulo Estudiante"]
 
-  Admin --> AD1[Dashboard]
-  Admin --> AD2[Horarios]
-  Admin --> AD3[Evaluacion]
-  Admin --> AD4[Usuarios]
-  Admin --> AD5[Configuracion]
-  Admin --> AD6[Auditoria]
+  Admin --> A1["Dashboard"]
+  Admin --> A2["Horarios"]
+  Admin --> A3["Evaluacion"]
+  Admin --> A4["Usuarios"]
+  Admin --> A5["Configuracion"]
+  Admin --> A6["Auditoria"]
 
-  Doc --> DC1[DashboardDocente]
-  Doc --> DC2[HorarioDocente]
-  Doc --> DC3[EvaluacionDocente]
+  Doc --> D1["Dashboard"]
+  Doc --> D2["Horario"]
+  Doc --> D3["Evaluacion"]
 
-  Est --> ES1[DashboardEstudiante]
-  Est --> ES2[HorarioEstudiante]
-  Est --> ES3[FormulariosEstudiante]
+  Est --> E1["Dashboard"]
+  Est --> E2["Horario"]
+  Est --> E3["Formularios"]
 
-  subgraph Compartido[Infraestructura frontend compartida]
-    API[clienteApi Axios]
-    Auth[storeAuth]
-    UI[storeUI]
-    Query[TanStack Query]
-    Toast[react-hot-toast]
+  subgraph Shared["Compartido"]
+    API["Axios API"]
+    Auth["Auth store"]
+    UI["UI store"]
+    Query["TanStack Query"]
   end
 
-  AD1 --> API
-  AD2 --> API
-  AD3 --> API
-  AD4 --> API
-  AD5 --> API
-  AD6 --> API
-  DC1 --> API
-  DC2 --> API
-  DC3 --> API
-  ES1 --> API
-  ES2 --> API
-  ES3 --> API
+  Admin --> API
+  Doc --> API
+  Est --> API
   D --> Auth
-  AD3 --> Query
-  AD5 --> UI
-  L --> Toast
+  Admin --> Query
+  Admin --> UI

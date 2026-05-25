@@ -1,23 +1,22 @@
 flowchart TD
-  A[Usuario ingresa email y contrasena] --> B[Frontend envia POST /api/auth/login]
-  B --> C{Backend valida DTO}
-  C -- Invalido --> X[Retorna 400 Bad Request]
-  C -- Valido --> D[Buscar usuario por email]
-  D --> E{Usuario activo existe?}
-  E -- No --> Y[Retorna credenciales incorrectas]
-  E -- Si --> F[Comparar contrasena con hash bcrypt]
-  F --> G{Hash coincide?}
-  G -- No --> Y
-  G -- Si --> H[Generar access token JWT]
-  H --> I[Generar refresh token]
-  I --> J[Registrar sesion y auditoria]
-  J --> K[Frontend guarda tokens y rol]
-  K --> L{Rol}
-  L -- Administrador --> M[Redirigir a /admin/dashboard]
-  L -- Docente --> N[Redirigir a /docente/dashboard]
-  L -- Estudiante --> O[Redirigir a /estudiante/dashboard]
+  A["Credenciales"] --> B["POST /auth/login"]
+  B --> C{"DTO valido"}
+  C -- "No" --> X["400 Bad Request"]
+  C -- "Si" --> D["Buscar usuario"]
+  D --> E{"Usuario activo"}
+  E -- "No" --> Y["Error de acceso"]
+  E -- "Si" --> F["Validar bcrypt"]
+  F --> G{"Coincide"}
+  G -- "No" --> Y
+  G -- "Si" --> H["Emitir JWT"]
+  H --> I["Crear sesion"]
+  I --> J["Guardar tokens"]
+  J --> K{"Rol"}
+  K --> L["Admin"]
+  K --> M["Docente"]
+  K --> N["Estudiante"]
 
   classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
-  classDef warn fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
-  class M,N,O ok
-  class X,Y warn
+  classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  class L,M,N ok
+  class X,Y err

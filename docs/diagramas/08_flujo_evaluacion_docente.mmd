@@ -1,19 +1,17 @@
 flowchart TD
-  A[Administrador crea periodo] --> B[Crea formulario]
-  B --> C[Define dimensiones y preguntas]
-  C --> D[Asigna formulario a docente]
-  D --> E[Estudiante ingresa al modulo de evaluaciones]
-  E --> F{Hay evaluaciones pendientes?}
-  F -- No --> G[Mostrar Todo al dia]
-  F -- Si --> H[Seleccionar docente/formulario]
-  H --> I[Responder preguntas]
-  I --> J[Enviar respuestas]
-  J --> K[Backend guarda respuestas]
-  K --> L[Marca estudiante como completado]
-  L --> M{Todos los estudiantes requeridos completaron?}
-  M -- No --> N[Evaluacion sigue en progreso]
-  M -- Si --> O[Evaluacion completada]
-  O --> P[Administrador ejecuta KDD]
+  A["Crear periodo"] --> B["Crear formulario"]
+  B --> C["Definir preguntas"]
+  C --> D["Asignar docente"]
+  D --> E["Estudiante ingresa"]
+  E --> F{"Pendientes"}
+  F -- "No" --> G["Todo al dia"]
+  F -- "Si" --> H["Responder"]
+  H --> I["Enviar"]
+  I --> J["Guardar respuestas"]
+  J --> K["Marcar avance"]
+  K --> L{"Completada"}
+  L -- "No" --> M["En progreso"]
+  L -- "Si" --> N["Lista para KDD"]
 
   classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
-  class G,O,P ok
+  class G,N ok
