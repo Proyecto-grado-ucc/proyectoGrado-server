@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Rol, RolNombre } from '../entidades/rol.entidad';
 import { Usuario } from '../entidades/usuario.entidad';
 import { AuthServicio } from '../auth/auth.servicio';
@@ -20,6 +20,7 @@ export class UsuariosServicio {
     @InjectRepository(Rol)
     private readonly rolRepo: Repository<Rol>,
     private readonly authServicio: AuthServicio,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearUsuarioDto): Promise<RespuestaUsuarioDto> {
@@ -91,7 +92,28 @@ export class UsuariosServicio {
   async eliminar(id: number): Promise<void> {
     const usuario = await this.usuarioRepo.findOne({ where: { id } });
     if (!usuario) throw new NotFoundException(`Usuario ${id} no encontrado`);
-    await this.usuarioRepo.remove(usuario);
+
+    await this.dataSource.transaction(async (manager) => {
+      const docentes = await manager.query(
+        'SELECT id FROM docente WHERE usuario_id = $1',
+        [id],
+      ) as { id: number }[];
+      const docenteIds = docentes.map((d) => d.id);
+
+      await manager.query('UPDATE audit_log SET usuario_id = NULL WHERE usuario_id = $1', [id]);
+      await manager.query('DELETE FROM sesion WHERE usuario_id = $1', [id]);
+      await manager.query('DELETE FROM estudiante WHERE usuario_id = $1', [id]);
+
+      if (docenteIds.length > 0) {
+        await manager.query('DELETE FROM disponibilidad WHERE docente_id = ANY($1::int[])', [docenteIds]);
+        await manager.query('DELETE FROM resultado_kdd WHERE docente_id = ANY($1::int[])', [docenteIds]);
+        await manager.query('DELETE FROM alerta WHERE docente_id = ANY($1::int[])', [docenteIds]);
+        await manager.query('DELETE FROM evaluacion WHERE docente_evaluado_id = ANY($1::int[])', [docenteIds]);
+        await manager.query('DELETE FROM docente WHERE id = ANY($1::int[])', [docenteIds]);
+      }
+
+      await manager.delete(Usuario, { id });
+    });
   }
 
   private mapearRespuesta(usuario: Usuario): RespuestaUsuarioDto {
