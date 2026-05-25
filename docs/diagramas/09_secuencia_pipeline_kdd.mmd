@@ -1,0 +1,24 @@
+sequenceDiagram
+  autonumber
+  actor Admin as Administrador
+  participant FE as Frontend React
+  participant API as API NestJS
+  participant KDD as KddPipelineServicio
+  participant DB as PostgreSQL
+  participant Dash as Dashboard
+
+  Admin->>FE: Selecciona periodo y ejecuta KDD
+  FE->>API: POST /api/kdd/ejecutar
+  API->>KDD: ejecutar(periodoId)
+  KDD->>DB: Eliminar resultados y alertas previas del periodo
+  KDD->>DB: Consultar evaluaciones completadas y respuestas
+  DB-->>KDD: Datos de evaluacion docente
+  KDD->>KDD: Seleccion, limpieza y transformacion
+  KDD->>KDD: Calculo de puntaje global y dimensiones
+  KDD->>KDD: Deteccion de alertas
+  KDD->>DB: Guardar resultado_kdd y alerta
+  DB-->>KDD: Confirmacion
+  KDD-->>API: Conteo de resultados y alertas
+  API-->>FE: 201 OK
+  FE->>Dash: Refrescar resultados y alertas
+  Dash-->>Admin: Visualiza analitica

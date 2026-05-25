@@ -1,0 +1,177 @@
+erDiagram
+  ROL ||--o{ USUARIO : asigna
+  USUARIO ||--o{ SESION : inicia
+  USUARIO ||--o{ AUDIT_LOG : registra
+  USUARIO ||--o| DOCENTE : perfil_docente
+  USUARIO ||--o| ESTUDIANTE : perfil_estudiante
+
+  NIVEL_IDIOMA ||--o{ CURSO : contiene
+  CURSO ||--o{ GRUPO : organiza
+  GRUPO ||--o{ ESTUDIANTE : agrupa
+  DOCENTE ||--o{ DISPONIBILIDAD : declara
+  FRANJA_HORARIA ||--o{ DISPONIBILIDAD : ocupa
+  PERIODO_ACADEMICO ||--o{ HORARIO : planifica
+
+  PERIODO_ACADEMICO ||--o{ FORMULARIO : define
+  FORMULARIO ||--o{ DIMENSION : contiene
+  DIMENSION ||--o{ PREGUNTA : agrupa
+  FORMULARIO ||--o{ EVALUACION : asigna
+  DOCENTE ||--o{ EVALUACION : evaluado
+  EVALUACION ||--o{ RESPUESTA : recibe
+  PREGUNTA ||--o{ RESPUESTA : responde
+
+  DOCENTE ||--o{ RESULTADO_KDD : produce
+  PERIODO_ACADEMICO ||--o{ RESULTADO_KDD : analiza
+  DOCENTE ||--o{ ALERTA : genera
+  PERIODO_ACADEMICO ||--o{ ALERTA : clasifica
+
+  ROL {
+    int id PK
+    string nombre UK
+    text descripcion
+  }
+  USUARIO {
+    int id PK
+    string nombre
+    string email UK
+    string password_hash
+    int rol_id FK
+    boolean activo
+    string reset_token
+  }
+  DOCENTE {
+    int id PK
+    int usuario_id FK
+    string especialidad
+    int carga_maxima_horas
+  }
+  ESTUDIANTE {
+    int id PK
+    int usuario_id FK
+    int grupo_id FK
+  }
+  PERIODO_ACADEMICO {
+    int id PK
+    string nombre
+    date fecha_inicio
+    date fecha_fin
+  }
+  NIVEL_IDIOMA {
+    int id PK
+    string codigo UK
+    string nombre
+  }
+  CURSO {
+    int id PK
+    string nombre
+    int nivel_id FK
+    int intensidad_horaria
+  }
+  GRUPO {
+    int id PK
+    string codigo
+    int curso_id FK
+    int cupo_max
+    string jornada
+    string codigo_acceso
+  }
+  AULA {
+    int id PK
+    string codigo UK
+    int capacidad
+    string tipo
+    boolean activa
+  }
+  FRANJA_HORARIA {
+    int id PK
+    string dia_semana
+    time hora_inicio
+    time hora_fin
+    int bloque_idx
+  }
+  DISPONIBILIDAD {
+    int id PK
+    int docente_id FK
+    int franja_horaria_id FK
+    boolean disponible
+  }
+  HORARIO {
+    int id PK
+    int periodo_id FK
+    jsonb asignaciones
+    float fitness
+    int conflictos
+    int tiempo_ms
+    jsonb metadata
+    boolean archivado
+  }
+  FORMULARIO {
+    int id PK
+    string titulo
+    text descripcion
+    int periodo_id FK
+    boolean activo
+  }
+  DIMENSION {
+    int id PK
+    string nombre
+    text descripcion
+    float peso
+    int formulario_id FK
+  }
+  PREGUNTA {
+    int id PK
+    text texto
+    string tipo
+    int orden_idx
+    int dimension_id FK
+  }
+  EVALUACION {
+    int id PK
+    int formulario_id FK
+    int docente_evaluado_id FK
+    int evaluador_id
+    int[] estudiantes_completaron
+    text[] comentarios_anonimos
+    string estado
+  }
+  RESPUESTA {
+    int id PK
+    int evaluacion_id FK
+    int pregunta_id FK
+    float valor_numerico
+    text valor_texto
+  }
+  RESULTADO_KDD {
+    int id PK
+    int periodo_id FK
+    int docente_id FK
+    float puntuacion_global
+    int total_evaluaciones
+    jsonb detalle_dimensiones
+  }
+  ALERTA {
+    int id PK
+    int docente_id FK
+    int periodo_id FK
+    string tipo
+    string nivel
+    text mensaje
+    boolean leida
+  }
+  SESION {
+    int id PK
+    int usuario_id FK
+    text token_jwt
+    datetime fecha_emision
+    datetime fecha_expiracion
+  }
+  AUDIT_LOG {
+    int id PK
+    int usuario_id FK
+    string accion
+    string entidad
+    string entidad_id
+    jsonb datos_previos
+    jsonb datos_nuevos
+  }

@@ -1,0 +1,19 @@
+flowchart TD
+  A[Administrador crea periodo] --> B[Crea formulario]
+  B --> C[Define dimensiones y preguntas]
+  C --> D[Asigna formulario a docente]
+  D --> E[Estudiante ingresa al modulo de evaluaciones]
+  E --> F{Hay evaluaciones pendientes?}
+  F -- No --> G[Mostrar Todo al dia]
+  F -- Si --> H[Seleccionar docente/formulario]
+  H --> I[Responder preguntas]
+  I --> J[Enviar respuestas]
+  J --> K[Backend guarda respuestas]
+  K --> L[Marca estudiante como completado]
+  L --> M{Todos los estudiantes requeridos completaron?}
+  M -- No --> N[Evaluacion sigue en progreso]
+  M -- Si --> O[Evaluacion completada]
+  O --> P[Administrador ejecuta KDD]
+
+  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
+  class G,O,P ok

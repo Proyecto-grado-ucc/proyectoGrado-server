@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  actor Admin as Administrador
+  participant FE as Frontend React
+  participant API as API NestJS
+  participant Hor as HorariosServicio
+  participant IA as Motor IA
+  participant Gemini as Gemini AI
+  participant DB as PostgreSQL
+
+  Admin->>FE: Presiona generar horario
+  FE->>API: POST /api/horarios/generar
+  API->>Hor: generar(dto)
+  Hor->>DB: Consultar docentes, grupos, cursos, aulas, franjas y disponibilidad
+  DB-->>Hor: Datos maestros
+  Hor->>IA: construirPoblacion(datos)
+  IA->>IA: Algoritmo genetico
+  IA->>IA: Busqueda tabu
+  opt Sugerencia externa opcional
+    IA->>Gemini: Solicitar apoyo de optimizacion
+    Gemini-->>IA: Sugerencias
+  end
+  IA-->>Hor: Mejor horario + metricas
+  Hor->>DB: Guardar horario
+  DB-->>Hor: Horario persistido
+  Hor-->>API: RespuestaHorarioDto
+  API-->>FE: 201 Created
+  FE-->>Admin: Muestra horario y metricas

@@ -1,0 +1,127 @@
+classDiagram
+  class Usuario {
+    +number id
+    +string nombre
+    +string email
+    +boolean activo
+  }
+  class Rol {
+    +number id
+    +RolNombre nombre
+  }
+  class Docente {
+    +number id
+    +string especialidad
+    +number cargaMaximaHoras
+  }
+  class Estudiante {
+    +number id
+    +number grupoId
+  }
+  class PeriodoAcademico {
+    +number id
+    +string nombre
+    +Date fechaInicio
+    +Date fechaFin
+  }
+  class NivelIdioma {
+    +number id
+    +CodigoNivel codigo
+    +string nombre
+  }
+  class Curso {
+    +number id
+    +string nombre
+    +number intensidadHoraria
+  }
+  class Grupo {
+    +number id
+    +string codigo
+    +number cupoMax
+    +Jornada jornada
+    +string codigoAcceso
+  }
+  class Aula {
+    +number id
+    +string codigo
+    +number capacidad
+    +TipoAula tipo
+    +boolean activa
+  }
+  class FranjaHoraria {
+    +number id
+    +DiaSemana diaSemana
+    +string horaInicio
+    +string horaFin
+    +number bloqueIdx
+  }
+  class Disponibilidad {
+    +number id
+    +boolean disponible
+  }
+  class Horario {
+    +number id
+    +Asignacion[] asignaciones
+    +number fitness
+    +number conflictos
+    +boolean archivado
+  }
+  class Formulario {
+    +number id
+    +string titulo
+    +string descripcion
+    +boolean activo
+  }
+  class Dimension {
+    +number id
+    +string nombre
+    +number peso
+  }
+  class Pregunta {
+    +number id
+    +string texto
+    +TipoPregunta tipo
+    +number ordenIdx
+  }
+  class Evaluacion {
+    +number id
+    +EstadoEvaluacion estado
+    +number[] estudiantesCompletaron
+    +string[] comentariosAnonimos
+  }
+  class Respuesta {
+    +number id
+    +number valorNumerico
+    +string valorTexto
+  }
+  class ResultadoKdd {
+    +number id
+    +number puntuacionGlobal
+    +number totalEvaluaciones
+  }
+  class Alerta {
+    +number id
+    +TipoAlerta tipo
+    +NivelAlerta nivel
+    +string mensaje
+    +boolean leida
+  }
+
+  Rol "1" --> "0..*" Usuario
+  Usuario "1" --> "0..1" Docente
+  Usuario "1" --> "0..1" Estudiante
+  NivelIdioma "1" --> "0..*" Curso
+  Curso "1" --> "0..*" Grupo
+  Grupo "1" --> "0..*" Estudiante
+  PeriodoAcademico "1" --> "0..*" Horario
+  PeriodoAcademico "1" --> "0..*" Formulario
+  Docente "1" --> "0..*" Disponibilidad
+  FranjaHoraria "1" --> "0..*" Disponibilidad
+  Formulario "1" --> "1..*" Dimension
+  Dimension "1" --> "1..*" Pregunta
+  Formulario "1" --> "0..*" Evaluacion
+  Docente "1" --> "0..*" Evaluacion
+  Evaluacion "1" --> "0..*" Respuesta
+  Pregunta "1" --> "0..*" Respuesta
+  Docente "1" --> "0..*" ResultadoKdd
+  Docente "1" --> "0..*" Alerta

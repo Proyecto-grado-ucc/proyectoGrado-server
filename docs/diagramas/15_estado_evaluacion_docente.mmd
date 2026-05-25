@@ -1,0 +1,16 @@
+stateDiagram-v2
+  [*] --> Pendiente: Administrador asigna formulario
+  Pendiente --> EnProgreso: Estudiante abre formulario
+  EnProgreso --> EnProgreso: Guarda respuestas parciales
+  EnProgreso --> Completada: Envia respuestas
+  Pendiente --> Cancelada: Administrador elimina asignacion
+  EnProgreso --> Cancelada: Administrador elimina asignacion
+  Completada --> Analizada: Ejecutar pipeline KDD
+  Analizada --> [*]
+  Cancelada --> [*]
+
+  state Pendiente
+  state EnProgreso
+  state Completada
+  state Analizada
+  state Cancelada

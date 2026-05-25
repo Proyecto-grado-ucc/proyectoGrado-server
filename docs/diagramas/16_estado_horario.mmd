@@ -1,0 +1,16 @@
+stateDiagram-v2
+  [*] --> Solicitado: Administrador inicia generacion
+  Solicitado --> ValidandoDatos: API carga datos maestros
+  ValidandoDatos --> ErrorDatos: Datos insuficientes
+  ErrorDatos --> [*]
+  ValidandoDatos --> Generando: Datos validos
+  Generando --> Optimizado: Algoritmo genetico + busqueda tabu
+  Optimizado --> Activo: Persistir horario archivado=false
+  Activo --> Archivado: Administrador archiva horario
+  Activo --> Reemplazado: Nuevo horario activo del periodo
+  Reemplazado --> Archivado
+  Archivado --> [*]
+
+  state Activo
+  state Archivado
+  state Reemplazado

@@ -1,0 +1,40 @@
+flowchart LR
+  subgraph Entrada[Datos de entrada]
+    A[Docentes y disponibilidad]
+    B[Grupos y cursos]
+    C[Aulas y capacidad]
+    D[Franjas horarias]
+    E[Periodo academico]
+  end
+
+  subgraph Motor[Motor IA de horarios]
+    F[Construccion de cromosomas]
+    G[Poblacion inicial]
+    H[Evaluacion de fitness]
+    I[Seleccion y cruce]
+    J[Mutacion controlada]
+    K[Busqueda tabu]
+    L[Mejor solucion factible]
+  end
+
+  subgraph Restricciones[Restricciones evaluadas]
+    R1[Choques docente/franja]
+    R2[Capacidad de aula]
+    R3[Disponibilidad docente]
+    R4[Intensidad horaria]
+    R5[Conflictos de grupo]
+  end
+
+  A --> F
+  B --> F
+  C --> F
+  D --> F
+  E --> F
+  F --> G --> H --> I --> J --> H
+  H --> K --> L
+  R1 --> H
+  R2 --> H
+  R3 --> H
+  R4 --> H
+  R5 --> H
+  L --> Z[Horario con asignaciones, fitness, conflictos y tiempo_ms]

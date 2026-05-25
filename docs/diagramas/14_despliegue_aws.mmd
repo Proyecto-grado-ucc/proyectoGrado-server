@@ -1,0 +1,23 @@
+flowchart TD
+  U[Usuarios web<br/>Admin, Docente, Estudiante] -->|HTTPS| CDN[AWS Amplify Hosting<br/>Frontend React/Vite]
+  CDN -->|Archivos estaticos| Browser[Navegador]
+  Browser -->|HTTPS JSON /api| APIGW[Amazon API Gateway<br/>Endpoint publico]
+  APIGW --> EB[Elastic Beanstalk<br/>Backend NestJS]
+  EB --> EC2[Instancia EC2 administrada<br/>Node.js runtime]
+  EC2 -->|TypeORM/PostgreSQL| DB[(PostgreSQL productivo)]
+  EC2 -->|HTTPS API| SG[SendGrid<br/>Correo transaccional]
+  EC2 -->|HTTPS API opcional| Gemini[Google Gemini AI]
+  Dev[Equipo de desarrollo] -->|Git push| GH[GitHub Repositories]
+  GH -->|Build/deploy frontend| CDN
+  Dev -->|Version bundle| S3[S3 bucket de versiones EB]
+  S3 -->|Application version| EB
+
+  subgraph Seguridad[Controles transversales]
+    JWT[JWT + roles]
+    CORS[CORS restringido]
+    ENV[Variables de entorno]
+  end
+
+  EB --> JWT
+  EB --> CORS
+  EB --> ENV

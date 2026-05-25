@@ -1,0 +1,29 @@
+C4Container
+title Figura 6.2. Diagrama de Arquitectura de Contenedores del Sistema CAL
+
+Person(admin, "Administrador", "Gestion academica y configuracion.")
+Person(docente, "Docente", "Consulta horario y resultados.")
+Person(estudiante, "Estudiante", "Consulta horario y responde evaluaciones.")
+
+System_Boundary(cal, "Sistema CAL") {
+  Container(spa, "Frontend Web", "React, Vite, TypeScript", "SPA multirol con rutas protegidas, dashboards y formularios.")
+  Container(api, "Backend API", "NestJS, TypeORM", "API REST modular para seguridad, horarios, evaluacion y KDD.")
+  ContainerDb(db, "Base de Datos", "PostgreSQL", "Persistencia relacional del dominio academico, seguridad, horarios y evaluaciones.")
+  Container(ai, "Motor de Horarios IA", "TypeScript", "Algoritmo genetico + busqueda tabu + calculo de fitness.")
+  Container(kdd, "Pipeline KDD", "NestJS Service", "Agrega respuestas, calcula puntuaciones y genera alertas.")
+}
+
+System_Ext(sendgrid, "SendGrid", "Correo transaccional")
+System_Ext(gemini, "Google Gemini AI", "Apoyo IA externo")
+
+Rel(admin, spa, "Usa", "HTTPS")
+Rel(docente, spa, "Usa", "HTTPS")
+Rel(estudiante, spa, "Usa", "HTTPS")
+Rel(spa, api, "Consume API REST", "JSON/HTTPS")
+Rel(api, db, "Lee y escribe", "TypeORM/PostgreSQL")
+Rel(api, ai, "Invoca generacion de horarios", "llamada interna")
+Rel(api, kdd, "Ejecuta analitica docente", "llamada interna")
+Rel(api, sendgrid, "Envia recuperacion de contrasena", "HTTPS/API")
+Rel(ai, gemini, "Solicita sugerencias opcionales", "HTTPS/API")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

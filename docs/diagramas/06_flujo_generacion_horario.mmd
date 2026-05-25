@@ -1,0 +1,17 @@
+flowchart TD
+  A[Administrador selecciona periodo] --> B[Solicita generar horario]
+  B --> C[API valida autenticacion y rol]
+  C --> D[Cargar datos maestros]
+  D --> E{Datos minimos completos?}
+  E -- No --> F[Retornar error con datos faltantes]
+  E -- Si --> G[Archivar horarios activos si aplica]
+  G --> H[Construir entrada del motor IA]
+  H --> I[Ejecutar algoritmo genetico]
+  I --> J[Mejorar solucion con busqueda tabu]
+  J --> K[Calcular fitness y conflictos]
+  K --> L[Persistir horario en PostgreSQL]
+  L --> M[Retornar resultado al frontend]
+  M --> N[Dashboard muestra horario generado]
+
+  classDef terminal fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+  class F,N terminal

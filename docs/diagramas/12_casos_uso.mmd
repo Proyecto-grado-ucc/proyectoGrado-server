@@ -1,0 +1,47 @@
+flowchart LR
+  Admin([Administrador])
+  Docente([Docente])
+  Estudiante([Estudiante])
+
+  subgraph CAL[Sistema CAL]
+    UC1((Autenticarse))
+    UC2((Gestionar usuarios))
+    UC3((Gestionar datos maestros))
+    UC4((Generar horario con IA))
+    UC5((Consultar horarios))
+    UC6((Crear formularios))
+    UC7((Asignar evaluaciones))
+    UC8((Responder evaluacion))
+    UC9((Ejecutar KDD))
+    UC10((Consultar dashboard))
+    UC11((Consultar auditoria))
+    UC12((Recuperar contrasena))
+    UC13((Inscribirse a grupo))
+  end
+
+  Admin --> UC1
+  Admin --> UC2
+  Admin --> UC3
+  Admin --> UC4
+  Admin --> UC5
+  Admin --> UC6
+  Admin --> UC7
+  Admin --> UC9
+  Admin --> UC10
+  Admin --> UC11
+  Admin --> UC12
+
+  Docente --> UC1
+  Docente --> UC5
+  Docente --> UC10
+  Docente --> UC12
+
+  Estudiante --> UC1
+  Estudiante --> UC5
+  Estudiante --> UC8
+  Estudiante --> UC12
+  Estudiante --> UC13
+
+  UC4 -. incluye .-> UC3
+  UC7 -. requiere .-> UC6
+  UC9 -. requiere .-> UC8
