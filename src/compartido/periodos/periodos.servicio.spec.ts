@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DataSource } from 'typeorm';
@@ -6,7 +6,7 @@ import { PeriodoAcademico } from '../entidades/periodo-academico.entidad';
 import { PeriodosServicio } from './periodos.servicio';
 
 const mockPeriodo = (): PeriodoAcademico =>
-  ({ id: 1, nombre: '2024-I', fechaInicio: '2024-01-15', fechaFin: '2024-06-30' }) as PeriodoAcademico;
+  ({ id: 1, nombre: '2026-II', fechaInicio: '2026-08-01', fechaFin: '2026-12-15' }) as PeriodoAcademico;
 
 describe('PeriodosServicio', () => {
   let servicio: PeriodosServicio;
@@ -47,8 +47,22 @@ describe('PeriodosServicio', () => {
       repo.create.mockReturnValue(p);
       repo.save.mockResolvedValue(p);
 
-      const resultado = await servicio.crear({ nombre: '2024-I', fechaInicio: '2024-01-15', fechaFin: '2024-06-30' });
-      expect(resultado.nombre).toBe('2024-I');
+      const resultado = await servicio.crear({ nombre: '2026-II', fechaInicio: '2026-08-01', fechaFin: '2026-12-15' });
+      expect(resultado.nombre).toBe('2026-II');
+    });
+
+    it('rechaza periodos con fecha de inicio en el pasado', async () => {
+      await expect(
+        servicio.crear({ nombre: '2024-I', fechaInicio: '2024-01-15', fechaFin: '2024-06-30' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(repo.save).not.toHaveBeenCalled();
+    });
+
+    it('rechaza periodos con fecha de fin anterior al inicio', async () => {
+      await expect(
+        servicio.crear({ nombre: '2026-II', fechaInicio: '2026-08-01', fechaFin: '2026-07-31' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(repo.save).not.toHaveBeenCalled();
     });
   });
 
@@ -86,6 +100,18 @@ describe('PeriodosServicio', () => {
       repo.save.mockResolvedValue({ ...p, nombre: '2024-II' });
       const resultado = await servicio.actualizar(1, { nombre: '2024-II' });
       expect(resultado.nombre).toBe('2024-II');
+    });
+
+    it('rechaza actualizar la fecha de inicio a una fecha pasada', async () => {
+      repo.findOne.mockResolvedValue(mockPeriodo());
+      await expect(servicio.actualizar(1, { fechaInicio: '2024-01-15' })).rejects.toThrow(BadRequestException);
+      expect(repo.save).not.toHaveBeenCalled();
+    });
+
+    it('rechaza actualizar a un rango de fechas incoherente', async () => {
+      repo.findOne.mockResolvedValue(mockPeriodo());
+      await expect(servicio.actualizar(1, { fechaFin: '2026-07-31' })).rejects.toThrow(BadRequestException);
+      expect(repo.save).not.toHaveBeenCalled();
     });
   });
 
