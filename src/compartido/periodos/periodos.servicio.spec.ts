@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Test, TestingModule } from '@nestjs/testing';
+import { DataSource } from 'typeorm';
 import { PeriodoAcademico } from '../entidades/periodo-academico.entidad';
 import { PeriodosServicio } from './periodos.servicio';
 
@@ -10,6 +11,8 @@ const mockPeriodo = (): PeriodoAcademico =>
 describe('PeriodosServicio', () => {
   let servicio: PeriodosServicio;
   let repo: { findOne: jest.Mock; findAndCount: jest.Mock; create: jest.Mock; save: jest.Mock; remove: jest.Mock };
+  let dataSource: { transaction: jest.Mock };
+  let manager: { query: jest.Mock; delete: jest.Mock };
 
   beforeEach(async () => {
     repo = {
@@ -19,11 +22,19 @@ describe('PeriodosServicio', () => {
       save: jest.fn(),
       remove: jest.fn(),
     };
+    manager = {
+      query: jest.fn(),
+      delete: jest.fn(),
+    };
+    dataSource = {
+      transaction: jest.fn(async (callback) => callback(manager)),
+    };
 
     const modulo: TestingModule = await Test.createTestingModule({
       providers: [
         PeriodosServicio,
         { provide: getRepositoryToken(PeriodoAcademico), useValue: repo },
+        { provide: DataSource, useValue: dataSource },
       ],
     }).compile();
 
@@ -86,8 +97,12 @@ describe('PeriodosServicio', () => {
 
     it('elimina el periodo correctamente', async () => {
       repo.findOne.mockResolvedValue(mockPeriodo());
-      repo.remove.mockResolvedValue(undefined);
       await expect(servicio.eliminar(1)).resolves.not.toThrow();
+      expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+      expect(manager.query).toHaveBeenCalledWith('DELETE FROM alerta WHERE periodo_id = $1', [1]);
+      expect(manager.query).toHaveBeenCalledWith('DELETE FROM resultado_kdd WHERE periodo_id = $1', [1]);
+      expect(manager.query).toHaveBeenCalledWith('DELETE FROM horario WHERE periodo_id = $1', [1]);
+      expect(manager.delete).toHaveBeenCalledWith(PeriodoAcademico, { id: 1 });
     });
   });
 });

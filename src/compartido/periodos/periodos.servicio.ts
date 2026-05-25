@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { PeriodoAcademico } from '../entidades/periodo-academico.entidad';
 import { ActualizarPeriodoDto } from './dto/actualizar-periodo.dto';
 import { CrearPeriodoDto } from './dto/crear-periodo.dto';
@@ -11,6 +11,7 @@ export class PeriodosServicio {
   constructor(
     @InjectRepository(PeriodoAcademico)
     private readonly periodoRepo: Repository<PeriodoAcademico>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async crear(dto: CrearPeriodoDto): Promise<RespuestaPeriodoDto> {
@@ -43,7 +44,49 @@ export class PeriodosServicio {
   async eliminar(id: number): Promise<void> {
     const p = await this.periodoRepo.findOne({ where: { id } });
     if (!p) throw new NotFoundException(`Periodo ${id} no encontrado`);
-    await this.periodoRepo.remove(p);
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query('DELETE FROM alerta WHERE periodo_id = $1', [id]);
+      await manager.query('DELETE FROM resultado_kdd WHERE periodo_id = $1', [id]);
+      await manager.query('DELETE FROM horario WHERE periodo_id = $1', [id]);
+
+      await manager.query(
+        `DELETE FROM respuesta
+         WHERE evaluacion_id IN (
+           SELECT e.id
+           FROM evaluacion e
+           INNER JOIN formulario f ON f.id = e.formulario_id
+           WHERE f.periodo_id = $1
+         )`,
+        [id],
+      );
+      await manager.query(
+        `DELETE FROM evaluacion
+         WHERE formulario_id IN (
+           SELECT id FROM formulario WHERE periodo_id = $1
+         )`,
+        [id],
+      );
+      await manager.query(
+        `DELETE FROM pregunta
+         WHERE dimension_id IN (
+           SELECT d.id
+           FROM dimension d
+           INNER JOIN formulario f ON f.id = d.formulario_id
+           WHERE f.periodo_id = $1
+         )`,
+        [id],
+      );
+      await manager.query(
+        `DELETE FROM dimension
+         WHERE formulario_id IN (
+           SELECT id FROM formulario WHERE periodo_id = $1
+         )`,
+        [id],
+      );
+      await manager.query('DELETE FROM formulario WHERE periodo_id = $1', [id]);
+      await manager.delete(PeriodoAcademico, { id });
+    });
   }
 
   private mapear(p: PeriodoAcademico): RespuestaPeriodoDto {
