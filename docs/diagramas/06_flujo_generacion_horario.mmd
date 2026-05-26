@@ -4,18 +4,21 @@ flowchart TD
   C --> D{"Autorizado"}
   D -- "No" --> E["403 acceso denegado"]
   D -- "Si" --> F["Seleccionar periodo"]
-  F --> G["Cargar datos maestros"]
+  F --> G["Cargar docentes, grupos, aulas y franjas"]
   G --> H{"Datos completos"}
   H -- "No" --> I["Reportar faltantes"]
   I --> F
-  H -- "Si" --> J["Ejecutar ciclo genetico"]
-  J --> K["Aplicar tabu por generacion"]
-  K --> L{"Converge"}
-  L -- "No" --> M["Reportar no convergencia"]
-  M --> F
-  L -- "Si" --> N["Consultar sugerencias Gemini"]
-  N --> O["Incorporar recomendaciones validas"]
-  O --> P["Persistir horario"]
-  P --> Q["Publicar horario"]
+  H -- "Si" --> J["Construir prompt con restricciones"]
+  J --> K["Solicitar horario a Gemini API"]
+  K --> L["Recibir propuesta de horario"]
+  L --> M{"Respuesta valida"}
+  M -- "No" --> N["Reportar error de IA"]
+  N --> F
+  M -- "Si" --> O["Validar conflictos y reglas de negocio"]
+  O --> P{"Tiene conflictos criticos"}
+  P -- "Si" --> Q["Solicitar ajuste con conflictos detectados"]
+  Q --> K
+  P -- "No" --> R["Persistir horario"]
+  R --> S["Publicar horario"]
   E --> Z((Fin))
-  Q --> Z
+  S --> Z

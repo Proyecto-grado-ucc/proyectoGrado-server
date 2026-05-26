@@ -1,0 +1,23 @@
+flowchart TD
+  A["Datos maestros"] --> B["Normalizar insumos"]
+  R["Reglas de negocio"] --> B
+  B --> C{"Insumos completos"}
+  C -- "No" --> X["Reportar faltantes"]
+  C -- "Si" --> D["Construir solicitud estructurada"]
+  D --> E["Enviar prompt a Gemini API"]
+  E --> F["Recibir propuesta de horario"]
+  F --> G["Parsear respuesta"]
+  G --> H{"Formato valido"}
+  H -- "No" --> I["Solicitar ajuste o reportar error"]
+  H -- "Si" --> J["Validar restricciones duras"]
+  J --> K{"Conflictos detectados"}
+  K -- "Si" --> L["Ajustar prompt con conflictos"]
+  L --> E
+  K -- "No" --> M["Validar reglas blandas"]
+  M --> N["Preparar horario generado"]
+  N --> O["Persistir resultado"]
+
+  classDef ext fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  class E,F ext
+  class X,I err

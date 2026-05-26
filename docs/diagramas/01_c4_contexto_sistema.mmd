@@ -8,12 +8,12 @@ Person(estudiante, "Estudiante", "Consulta horarios y evalua docentes.")
 System(cal, "Sistema CAL", "Gestion academica, horarios IA y evaluacion docente.")
 
 System_Ext(sendgrid, "SendGrid", "Correo transaccional.")
-System_Ext(gemini, "Gemini AI", "Servicio externo de apoyo al motor IA.")
+System_Ext(gemini, "Gemini API", "Servicio externo de IA generativa.")
 
 Rel(admin, cal, "Administra")
 Rel(docente, cal, "Consulta")
 Rel(estudiante, cal, "Usa")
 Rel(cal, sendgrid, "Envia correos")
-Rel(cal, gemini, "Solicita sugerencias")
+Rel(cal, gemini, "Solicita generacion asistida")
 
 UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")

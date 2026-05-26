@@ -5,7 +5,7 @@ sequenceDiagram
   participant Api as Backend API
   participant Datos as Datos maestros
   participant Motor as Motor IA
-  participant Gemini as Gemini AI
+  participant Gemini as Gemini API
   participant Db as PostgreSQL
 
   Admin->>Front: Solicita generar horario
@@ -15,16 +15,23 @@ sequenceDiagram
   Datos-->>Api: Insumos normalizados
   Api->>Db: Eliminar resultados previos del periodo
   Db-->>Api: Confirmacion
-  Api->>Motor: Ejecutar algoritmo genetico + tabu
-  alt Motor IA falla o no converge
-    Motor-->>Api: Error de generacion
+  Api->>Motor: Preparar solicitud de generacion
+  Motor->>Motor: Construir prompt con restricciones
+  Motor->>Gemini: Enviar restricciones y datos academicos
+  alt Gemini no responde o devuelve formato invalido
+    Gemini-->>Motor: Error o respuesta invalida
+    Motor-->>Api: Error de generacion asistida
     Api-->>Front: 422 no fue posible generar horario
     Front-->>Admin: Muestra ajuste requerido
-  else Horario candidato valido
-    Motor->>Gemini: Pedir sugerencias de mejora
-    Gemini-->>Motor: Recomendaciones
-    Motor->>Motor: Incorpora sugerencias aplicables
-    Motor-->>Api: Horario optimizado
+  else Gemini devuelve propuesta
+    Gemini-->>Motor: Horario propuesto
+    Motor->>Motor: Parsear y validar reglas duras
+    alt Hay conflictos criticos
+      Motor->>Gemini: Solicitar ajuste con conflictos
+      Gemini-->>Motor: Propuesta ajustada
+      Motor->>Motor: Validar nuevamente
+    end
+    Motor-->>Api: Horario validado
     Api->>Db: Persistir horario
     Db-->>Api: Horario guardado
     Api-->>Front: 201 horario generado

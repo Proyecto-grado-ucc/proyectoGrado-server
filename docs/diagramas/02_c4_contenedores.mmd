@@ -7,19 +7,19 @@ System_Boundary(cal, "Sistema CAL") {
   Container(spa, "Frontend Web", "React + Vite", "SPA multirol con JWT.")
   Container(api, "Backend API", "NestJS + TypeORM", "API REST y punto de entrada.")
   ContainerDb(db, "PostgreSQL", "Base de datos", "Persistencia relacional.")
-  Container(ai, "Motor IA", "TypeScript", "Generacion y optimizacion de horarios.")
+  Container(ai, "Motor IA", "NestJS Service", "Generacion asistida por Gemini y validacion de reglas.")
   Container(kdd, "Pipeline KDD", "NestJS Service", "Analitica de evaluaciones.")
 }
 
 System_Ext(sendgrid, "SendGrid", "Correo transaccional.")
-System_Ext(gemini, "Gemini AI", "Sugerencias IA.")
+System_Ext(gemini, "Gemini API", "Modelo externo de IA generativa.")
 
 Rel(user, spa, "Usa", "HTTPS")
 Rel(spa, api, "Consume", "JSON/HTTPS")
 Rel(api, db, "Lee/escribe", "SQL")
-Rel(api, ai, "Genera horarios")
+Rel(api, ai, "Solicita generacion IA")
 Rel(api, kdd, "Ejecuta analitica")
 Rel(api, sendgrid, "Solicita envio")
-Rel(ai, gemini, "Solicita sugerencias")
+Rel(ai, gemini, "Envia restricciones y recibe propuesta")
 
 UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

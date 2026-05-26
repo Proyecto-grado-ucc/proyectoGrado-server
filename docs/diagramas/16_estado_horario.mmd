@@ -3,11 +3,12 @@ stateDiagram-v2
   Solicitado --> ValidandoDatos: API carga datos maestros
   ValidandoDatos --> CorreccionDatos: datos insuficientes
   CorreccionDatos --> ValidandoDatos: reintentar
-  ValidandoDatos --> Generando: datos validos
-  Generando --> ErrorGeneracion: falla o no converge
-  ErrorGeneracion --> Generando: ajustar parametros
-  Generando --> Optimizando: poblacion valida
-  Optimizando --> Persistido: mejor candidato
+  ValidandoDatos --> GenerandoIA: datos validos
+  GenerandoIA --> ErrorGeneracion: Gemini falla o formato invalido
+  ErrorGeneracion --> GenerandoIA: ajustar solicitud
+  GenerandoIA --> ValidandoReglas: propuesta recibida
+  ValidandoReglas --> GenerandoIA: conflictos criticos
+  ValidandoReglas --> Persistido: horario valido
   Persistido --> Activo: publicar horario
   Activo --> Archivado: nuevo periodo o archivo manual
   Archivado --> [*]

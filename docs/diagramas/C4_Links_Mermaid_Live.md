@@ -8,7 +8,7 @@ Estos enlaces permiten abrir cada diagrama en Mermaid Live para revisar o export
 | `02_c4_contenedores.mmd` | `svg/02_c4_contenedores.svg` |
 | `03_flujo_autenticacion_jwt.mmd` | `svg/03_flujo_autenticacion_jwt.svg` |
 | `04_secuencia_autenticacion_jwt.mmd` | `svg/04_secuencia_autenticacion_jwt.svg` |
-| `05_motor_ia_genetico_tabu.mmd` | `svg/05_motor_ia_genetico_tabu.svg` |
+| `05_motor_ia_gemini_api.mmd` | `svg/05_motor_ia_gemini_api.svg` |
 | `06_flujo_generacion_horario.mmd` | `svg/06_flujo_generacion_horario.svg` |
 | `07_secuencia_generacion_horario.mmd` | `svg/07_secuencia_generacion_horario.svg` |
 | `08_flujo_evaluacion_docente.mmd` | `svg/08_flujo_evaluacion_docente.svg` |

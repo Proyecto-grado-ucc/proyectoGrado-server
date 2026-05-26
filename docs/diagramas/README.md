@@ -10,7 +10,7 @@ Los criterios de simplificacion y legibilidad aplicados estan documentados en `c
 | 6.2 | `02_c4_contenedores.mmd` | C4 Container | Contenedores desplegables y responsabilidades tecnicas. |
 | 6.3 | `03_flujo_autenticacion_jwt.mmd` | Flowchart | Flujo funcional de login, JWT, errores 401/403 y autorizacion por rol. |
 | 6.4 | `04_secuencia_autenticacion_jwt.mmd` | Sequence | Interaccion dinamica del login con JWT y roles. |
-| 6.5 | `05_motor_ia_genetico_tabu.mmd` | Flowchart | Arquitectura interna del motor IA hibrido. |
+| 6.5 | `05_motor_ia_gemini_api.mmd` | Flowchart | Arquitectura interna del motor IA basado en Gemini API y validacion de reglas. |
 | 6.6 | `06_flujo_generacion_horario.mmd` | Flowchart | Proceso de generacion automatica de horarios. |
 | 6.7 | `07_secuencia_generacion_horario.mmd` | Sequence | Secuencia entre administrador, API, motor IA y servicios externos. |
 | 6.8 | `08_flujo_evaluacion_docente.mmd` | Flowchart | Ciclo funcional de formularios, asignaciones y respuestas. |
