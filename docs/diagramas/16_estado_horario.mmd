@@ -1,16 +1,13 @@
 stateDiagram-v2
   [*] --> Solicitado: Administrador inicia generacion
   Solicitado --> ValidandoDatos: API carga datos maestros
-  ValidandoDatos --> ErrorDatos: Datos insuficientes
-  ErrorDatos --> [*]
-  ValidandoDatos --> Generando: Datos validos
-  Generando --> Optimizado: Algoritmo genetico + busqueda tabu
-  Optimizado --> Activo: Persistir horario archivado=false
-  Activo --> Archivado: Administrador archiva horario
-  Activo --> Reemplazado: Nuevo horario activo del periodo
-  Reemplazado --> Archivado
+  ValidandoDatos --> CorreccionDatos: datos insuficientes
+  CorreccionDatos --> ValidandoDatos: reintentar
+  ValidandoDatos --> Generando: datos validos
+  Generando --> ErrorGeneracion: falla o no converge
+  ErrorGeneracion --> Generando: ajustar parametros
+  Generando --> Optimizando: poblacion valida
+  Optimizando --> Persistido: mejor candidato
+  Persistido --> Activo: publicar horario
+  Activo --> Archivado: nuevo periodo o archivo manual
   Archivado --> [*]
-
-  state Activo
-  state Archivado
-  state Reemplazado

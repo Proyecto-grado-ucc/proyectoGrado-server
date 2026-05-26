@@ -1,49 +1,60 @@
-flowchart LR
-  subgraph A["Administrador"]
-    Admin["Actor"]
-    A0(("Autenticarse"))
-    A1(("Usuarios"))
-    A2(("Datos maestros"))
-    A3(("Horarios IA"))
-    A4(("Formularios"))
-    A5(("Asignaciones"))
-    A6(("KDD"))
-    A7(("Auditoria"))
+flowchart TB
+  Admin["Administrador"]:::actor
+  Docente["Docente"]:::actor
+  Estudiante["Estudiante"]:::actor
+
+  subgraph CAL["Sistema CAL"]
+    subgraph Seguridad["Seguridad"]
+      Login(("Autenticarse"))
+      Recuperar(("Recuperar clave"))
+    end
+
+    subgraph Gestion["Gestion administrativa"]
+      Usuarios(("Gestionar usuarios"))
+      Maestros(("Gestionar datos maestros"))
+      Formularios(("Gestionar formularios"))
+      AsignarEval(("Asignar evaluaciones"))
+      GenerarHorario(("Generar horario IA"))
+      EjecutarKdd(("Ejecutar KDD"))
+      Auditoria(("Consultar auditoria"))
+    end
+
+    subgraph Consulta["Consulta academica"]
+      ConsultarHorario(("Consultar horario"))
+      ConsultarResultados(("Consultar resultados"))
+    end
+
+    subgraph Participacion["Participacion estudiante"]
+      ResponderEval(("Responder evaluacion docente"))
+      Inscripcion(("Inscribirse a grupo"))
+    end
   end
 
-  subgraph D["Docente"]
-    Docente["Actor"]
-    D0(("Autenticarse"))
-    D1(("Consultar horario"))
-    D2(("Dashboard"))
-    D3(("Recuperar clave"))
-  end
+  Admin --> Login
+  Docente --> Login
+  Estudiante --> Login
+  Admin --> Recuperar
+  Docente --> Recuperar
+  Estudiante --> Recuperar
 
-  subgraph E["Estudiante"]
-    Estudiante["Actor"]
-    E0(("Autenticarse"))
-    E1(("Consultar horario"))
-    E2(("Responder evaluacion"))
-    E3(("Inscripcion grupo"))
-    E4(("Recuperar clave"))
-  end
+  Admin --> Usuarios
+  Admin --> Maestros
+  Admin --> Formularios
+  Admin --> AsignarEval
+  Admin --> GenerarHorario
+  Admin --> EjecutarKdd
+  Admin --> Auditoria
 
-  Admin --> A0
-  Admin --> A1
-  Admin --> A2
-  Admin --> A3
-  Admin --> A4
-  Admin --> A5
-  Admin --> A6
-  Admin --> A7
+  Docente --> ConsultarHorario
+  Docente --> ConsultarResultados
 
-  Docente --> D0
-  Docente --> D1
-  Docente --> D2
-  Docente --> D3
+  Estudiante --> ConsultarHorario
+  Estudiante --> ResponderEval
+  Estudiante --> Inscripcion
 
-  Estudiante --> E0
-  Estudiante --> E1
-  Estudiante --> E2
-  Estudiante --> E3
-  Estudiante --> E4
+  Recuperar -. "extend" .-> Login
+  AsignarEval -. "include" .-> Formularios
+  GenerarHorario -. "include" .-> Maestros
+  EjecutarKdd -. "include" .-> ResponderEval
+
+  classDef actor fill:#fff,stroke:#111827,stroke-width:2px,color:#111827

@@ -1,115 +1,156 @@
 erDiagram
-  ROL ||--o{ USUARIO : tiene
-  USUARIO ||--o{ SESION : inicia
-  USUARIO ||--o{ AUDIT_LOG : registra
-  USUARIO ||--o| DOCENTE : perfil
-  USUARIO ||--o| ESTUDIANTE : perfil
-
-  NIVEL_IDIOMA ||--o{ CURSO : contiene
-  CURSO ||--o{ GRUPO : organiza
-  GRUPO ||--o{ ESTUDIANTE : asigna
-  PERIODO_ACADEMICO ||--o{ HORARIO : planifica
-  DOCENTE ||--o{ DISPONIBILIDAD : declara
-  FRANJA_HORARIA ||--o{ DISPONIBILIDAD : define
-
-  PERIODO_ACADEMICO ||--o{ FORMULARIO : habilita
-  FORMULARIO ||--o{ DIMENSION : contiene
-  DIMENSION ||--o{ PREGUNTA : agrupa
-  FORMULARIO ||--o{ EVALUACION : origina
-  DOCENTE ||--o{ EVALUACION : recibe
-  EVALUACION ||--o{ RESPUESTA : contiene
-  PREGUNTA ||--o{ RESPUESTA : responde
-  DOCENTE ||--o{ RESULTADO_KDD : resume
-  PERIODO_ACADEMICO ||--o{ RESULTADO_KDD : analiza
-  DOCENTE ||--o{ ALERTA : genera
-  PERIODO_ACADEMICO ||--o{ ALERTA : clasifica
-
   ROL {
     int id PK
-    string nombre UK
+    string nombre
   }
   USUARIO {
     int id PK
-    string email UK
     int rol_id FK
+    string email
+    string password_hash
+    boolean activo
   }
   DOCENTE {
     int id PK
     int usuario_id FK
+    string especialidad
+    int carga_max_horas
   }
   ESTUDIANTE {
     int id PK
     int usuario_id FK
-    int grupo_id FK
+    string codigo
   }
-  NIVEL_IDIOMA {
+  ESTUDIANTE_GRUPO {
     int id PK
-    string codigo UK
+    int estudiante_id FK
+    int grupo_id FK
+    int periodo_id FK
+  }
+  NIVEL {
+    int id PK
+    string nombre
   }
   CURSO {
     int id PK
     int nivel_id FK
+    string nombre
   }
   GRUPO {
     int id PK
     int curso_id FK
+    string nombre
+    string codigo_acceso
   }
-  PERIODO_ACADEMICO {
+  AULA {
     int id PK
-    date fecha_inicio
-    date fecha_fin
-  }
-  HORARIO {
-    int id PK
-    int periodo_id FK
-    jsonb asignaciones
+    string codigo
+    int capacidad
   }
   FRANJA_HORARIA {
     int id PK
-    string dia_semana
+    string dia
+    time hora_inicio
+    time hora_fin
+  }
+  PERIODO_ACADEMICO {
+    int id PK
+    string nombre
+    date fecha_inicio
+    date fecha_fin
   }
   DISPONIBILIDAD {
     int id PK
     int docente_id FK
+    int periodo_id FK
     int franja_id FK
+  }
+  HORARIO {
+    int id PK
+    int periodo_id FK
+    string estado
+  }
+  HORARIO_DETALLE {
+    int id PK
+    int horario_id FK
+    int grupo_id FK
+    int curso_id FK
+    int docente_id FK
+    int aula_id FK
+    int franja_id FK
+    string dia
   }
   FORMULARIO {
     int id PK
     int periodo_id FK
+    string titulo
+    boolean activo
   }
   DIMENSION {
     int id PK
     int formulario_id FK
+    string nombre
   }
   PREGUNTA {
     int id PK
     int dimension_id FK
+    string texto
   }
   EVALUACION {
     int id PK
     int formulario_id FK
     int docente_id FK
+    int estudiante_id FK
+    string estado
   }
   RESPUESTA {
     int id PK
     int evaluacion_id FK
     int pregunta_id FK
+    int estudiante_id FK
+    int valor
   }
   RESULTADO_KDD {
     int id PK
     int periodo_id FK
     int docente_id FK
+    decimal puntaje_global
   }
   ALERTA {
     int id PK
     int periodo_id FK
     int docente_id FK
+    string tipo
   }
-  SESION {
-    int id PK
-    int usuario_id FK
-  }
-  AUDIT_LOG {
-    int id PK
-    int usuario_id FK
-  }
+
+  ROL ||--o{ USUARIO : asigna
+  USUARIO ||--o| DOCENTE : perfil
+  USUARIO ||--o| ESTUDIANTE : perfil
+  NIVEL ||--o{ CURSO : agrupa
+  CURSO ||--o{ GRUPO : contiene
+  ESTUDIANTE ||--o{ ESTUDIANTE_GRUPO : matricula
+  GRUPO ||--o{ ESTUDIANTE_GRUPO : recibe
+  PERIODO_ACADEMICO ||--o{ ESTUDIANTE_GRUPO : vigencia
+  DOCENTE ||--o{ DISPONIBILIDAD : declara
+  PERIODO_ACADEMICO ||--o{ DISPONIBILIDAD : delimita
+  FRANJA_HORARIA ||--o{ DISPONIBILIDAD : usa
+  PERIODO_ACADEMICO ||--o{ HORARIO : planifica
+  HORARIO ||--o{ HORARIO_DETALLE : detalla
+  GRUPO ||--o{ HORARIO_DETALLE : asigna
+  CURSO ||--o{ HORARIO_DETALLE : programa
+  DOCENTE ||--o{ HORARIO_DETALLE : dicta
+  AULA ||--o{ HORARIO_DETALLE : ocupa
+  FRANJA_HORARIA ||--o{ HORARIO_DETALLE : ubica
+  PERIODO_ACADEMICO ||--o{ FORMULARIO : evalua
+  FORMULARIO ||--o{ DIMENSION : contiene
+  DIMENSION ||--o{ PREGUNTA : agrupa
+  FORMULARIO ||--o{ EVALUACION : instancia
+  DOCENTE ||--o{ EVALUACION : evaluado
+  ESTUDIANTE ||--o{ EVALUACION : responde
+  EVALUACION ||--o{ RESPUESTA : contiene
+  PREGUNTA ||--o{ RESPUESTA : califica
+  ESTUDIANTE ||--o{ RESPUESTA : emite
+  DOCENTE ||--o{ RESULTADO_KDD : obtiene
+  DOCENTE ||--o{ ALERTA : genera
+  PERIODO_ACADEMICO ||--o{ RESULTADO_KDD : consolida
+  PERIODO_ACADEMICO ||--o{ ALERTA : reporta

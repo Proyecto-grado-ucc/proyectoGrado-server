@@ -1,22 +1,30 @@
 flowchart TD
-  A["Credenciales"] --> B["POST /auth/login"]
-  B --> C{"DTO valido"}
-  C -- "No" --> X["400 Bad Request"]
-  C -- "Si" --> D["Buscar usuario"]
-  D --> E{"Usuario activo"}
-  E -- "No" --> Y["Error de acceso"]
-  E -- "Si" --> F["Validar bcrypt"]
-  F --> G{"Coincide"}
-  G -- "No" --> Y
-  G -- "Si" --> H["Emitir JWT"]
-  H --> I["Crear sesion"]
-  I --> J["Guardar tokens"]
-  J --> K{"Rol"}
-  K --> L["Admin"]
-  K --> M["Docente"]
-  K --> N["Estudiante"]
+  A((Inicio)) --> B["Enviar email y password"]
+  B --> C["Validar DTO"]
+  C --> D{"DTO valido"}
+  D -- "No" --> E["400 datos invalidos"]
+  D -- "Si" --> F["Buscar usuario por email"]
+  F --> G{"Usuario existe"}
+  G -- "No" --> H["401 credenciales invalidas"]
+  G -- "Si" --> I{"Usuario activo"}
+  I -- "No" --> J["403 usuario inactivo"]
+  I -- "Si" --> K["Comparar password con bcrypt"]
+  K --> L{"Password valido"}
+  L -- "No" --> H
+  L -- "Si" --> M["Generar JWT y perfil"]
+  M --> N["Guardar token en cliente"]
+  N --> O{"Rol autenticado"}
+  O -- "Admin" --> P["Panel admin"]
+  O -- "Docente" --> Q["Panel docente"]
+  O -- "Estudiante" --> R["Panel estudiante"]
+  E --> Z((Fin))
+  H --> Z
+  J --> Z
+  P --> Z
+  Q --> Z
+  R --> Z
 
   classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
   classDef err fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
-  class L,M,N ok
-  class X,Y err
+  class P,Q,R ok
+  class E,H,J err

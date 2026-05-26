@@ -1,38 +1,51 @@
 flowchart TD
   A["main.tsx"] --> B["App.tsx"]
   B --> C["React Router"]
-  C --> D["RutaProtegida"]
   C --> P["Paginas publicas"]
+  P --> P1["Login"]
+  P --> P2["Recuperar clave"]
+  P --> P3["Status publico"]
 
-  D --> Admin["Modulo Admin"]
-  D --> Doc["Modulo Docente"]
-  D --> Est["Modulo Estudiante"]
+  C --> D["RutaProtegida"]
+  Auth["Auth store"] -->|"valida sesion y rol"| D
+  D --> R{"Rol"}
+  R -- "Admin" --> Admin["Modulo Admin"]
+  R -- "Docente" --> Doc["Modulo Docente"]
+  R -- "Estudiante" --> Est["Modulo Estudiante"]
 
-  Admin --> A1["Dashboard"]
-  Admin --> A2["Horarios"]
-  Admin --> A3["Evaluacion"]
-  Admin --> A4["Usuarios"]
-  Admin --> A5["Configuracion"]
-  Admin --> A6["Auditoria"]
+  Admin --> AP["Paginas admin"]
+  AP --> A1["Usuarios"]
+  AP --> A2["Configuracion"]
+  AP --> A3["Horarios"]
+  AP --> A4["Evaluacion"]
+  AP --> A5["KDD"]
+  AP --> A6["Auditoria"]
 
-  Doc --> D1["Dashboard"]
-  Doc --> D2["Horario"]
-  Doc --> D3["Evaluacion"]
+  Doc --> DP["Paginas docente"]
+  DP --> D1["Dashboard"]
+  DP --> D2["Horario"]
+  DP --> D3["Resultados y alertas"]
 
-  Est --> E1["Dashboard"]
-  Est --> E2["Horario"]
-  Est --> E3["Formularios"]
+  Est --> EP["Paginas estudiante"]
+  EP --> E1["Dashboard"]
+  EP --> E2["Horario"]
+  EP --> E3["Evaluacion"]
+  EP --> E4["Inscripcion"]
+
+  Admin --> Svc["Hooks y servicios"]
+  Doc --> Svc
+  Est --> Svc
+  P --> Svc
 
   subgraph Shared["Compartido"]
-    API["Axios API"]
-    Auth["Auth store"]
-    UI["UI store"]
+    Svc
     Query["TanStack Query"]
+    UI["UI store"]
+    API["Axios API"]
   end
 
-  Admin --> API
-  Doc --> API
-  Est --> API
-  D --> Auth
-  Admin --> Query
-  Admin --> UI
+  Svc --> Query
+  Query --> API
+  UI --> Admin
+  UI --> Doc
+  UI --> Est

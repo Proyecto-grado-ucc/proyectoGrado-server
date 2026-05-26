@@ -1,28 +1,40 @@
 sequenceDiagram
   autonumber
-  actor U as Usuario
-  participant F as Frontend React
-  participant A as API NestJS
-  participant Auth as AuthServicio
-  participant DB as PostgreSQL
+  actor Usuario
+  participant Front as Frontend React
+  participant Auth as AuthController
+  participant UserSvc as UsuariosService
+  participant Crypto as bcrypt
+  participant Jwt as JwtService
   participant Audit as AuditLog
 
-  U->>F: Ingresa email y contrasena
-  F->>A: POST /api/auth/login
-  A->>Auth: validarCredenciales(email, contrasena)
-  Auth->>DB: Buscar usuario + rol + password_hash
-  DB-->>Auth: Usuario encontrado
-  Auth->>Auth: Comparar bcrypt
-  alt Credenciales validas
-    Auth->>Auth: Firmar access_token y refresh_token
-    Auth->>DB: Guardar sesion
+  Usuario->>Front: Ingresa credenciales
+  Front->>Auth: POST /api/auth/login
+  Auth->>Auth: Valida DTO
+  Auth->>UserSvc: Buscar por email
+  alt Usuario no encontrado
+    UserSvc-->>Auth: null
+    Auth-->>Front: 401 credenciales invalidas
+    Front-->>Usuario: Muestra error
+  else Usuario inactivo
+    UserSvc-->>Auth: Usuario inactivo
+    Auth-->>Front: 403 usuario inactivo
+    Front-->>Usuario: Muestra bloqueo
+  else Usuario activo
+    UserSvc-->>Auth: Usuario activo
+    Auth->>Crypto: Comparar hash
+    Crypto-->>Auth: Resultado
+  end
+
+  alt Password valido
+    Auth->>Jwt: Firmar payload
+    Jwt-->>Auth: access_token
     Auth->>Audit: Registrar LOGIN
-    Auth-->>A: Tokens + rol
-    A-->>F: 200 OK
-    F->>F: Guardar tokens
-    F-->>U: Redireccion por rol
-  else Credenciales invalidas
-    Auth-->>A: Error de autenticacion
-    A-->>F: 401/400
-    F-->>U: Mostrar mensaje de error
+    Audit-->>Auth: Registro confirmado
+    Auth-->>Front: 200 token y perfil
+    Front->>Front: Guardar token en localStorage
+    Front-->>Usuario: Redirige segun rol
+  else Password invalido
+    Auth-->>Front: 401 credenciales invalidas
+    Front-->>Usuario: Muestra error
   end

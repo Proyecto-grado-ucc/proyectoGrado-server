@@ -1,22 +1,35 @@
 flowchart TD
-  U["Usuarios"] -->|HTTPS| AMP["AWS Amplify<br/>Frontend"]
-  AMP --> BR["Navegador"]
-  BR -->|/api| GW["API Gateway"]
-  GW --> EB["Elastic Beanstalk<br/>NestJS"]
-  EB --> EC2["EC2 administrada"]
-  EC2 --> DB[("PostgreSQL")]
-  EC2 --> SG["SendGrid"]
-  EC2 --> GM["Gemini AI"]
+  U["Usuario en navegador"] -->|HTTPS| AMP["Amplify Hosting"]
 
+  subgraph AWS["AWS Cloud"]
+    subgraph WEB["Capa web"]
+      AMP
+    end
+    subgraph BE["Capa backend"]
+      GW["API Gateway"] --> EB["Elastic Beanstalk"]
+      EB --> EC2["EC2 Docker"]
+      EC2 --> DB[("RDS PostgreSQL")]
+      S3["S3 artefactos backend"] --> EB
+    end
+  end
+
+  AMP -->|HTTPS /api| GW
+
+  subgraph EXT["Servicios externos"]
+    SG["SendGrid"]
+    GM["Gemini AI"]
+  end
+
+  EC2 -->|Correo transaccional| SG
+  EC2 -->|Sugerencias IA| GM
   DEV["Equipo dev"] --> GH["GitHub"]
   GH --> AMP
-  DEV --> S3["S3 versiones"]
-  S3 --> EB
+  DEV --> S3
 
   subgraph SEC["Controles"]
     JWT["JWT + roles"]
     CORS["CORS"]
-    ENV["Variables"]
+    ENV["Variables seguras"]
   end
 
   EB --> JWT

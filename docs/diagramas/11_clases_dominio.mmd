@@ -14,7 +14,7 @@ classDiagram
   }
   class Estudiante {
     +id
-    +grupoId
+    +codigo
   }
   class PeriodoAcademico {
     +id
@@ -26,7 +26,7 @@ classDiagram
   }
   class Grupo {
     +id
-    +codigo
+    +codigoAcceso
   }
   class Horario {
     +id
@@ -69,6 +69,8 @@ classDiagram
   Grupo "1" --> "0..*" Estudiante
   PeriodoAcademico "1" --> "0..*" Horario
   PeriodoAcademico "1" --> "0..*" Formulario
+  PeriodoAcademico "1" --> "0..*" ResultadoKdd
+  PeriodoAcademico "1" --> "0..*" Alerta
   Formulario "1" --> "1..*" Dimension
   Dimension "1" --> "1..*" Pregunta
   Formulario "1" --> "0..*" Evaluacion

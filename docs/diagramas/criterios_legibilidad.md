@@ -8,6 +8,9 @@ Los diagramas fueron ajustados siguiendo buenas practicas de documentacion arqui
 - Reducir cruces visuales mediante orientacion consistente (`TD` para procesos secuenciales y `LR` para arquitectura/componentes).
 - Evitar saturacion de atributos en ERD y clases. Solo se muestran claves y atributos representativos; el detalle completo pertenece al diccionario de datos o al codigo fuente.
 - Usar nombres consistentes con la implementacion: `Usuario`, `Docente`, `Estudiante`, `Formulario`, `Evaluacion`, `Horario`, `ResultadoKdd` y `Alerta`.
+- Separar responsabilidades en flujos mixtos mediante swimlanes o subgrafos por actor cuando intervienen administrador, estudiante y backend.
+- Diferenciar sistemas propios, servicios externos e infraestructura. El despliegue usa un boundary explicito de `AWS Cloud`; SendGrid y Gemini quedan fuera como servicios externos.
+- Mantener el ERD como modelo logico normalizado para sustentacion: `HORARIO_DETALLE`, `ESTUDIANTE_GRUPO`, `DISPONIBILIDAD.periodo_id` y `RESPUESTA.estudiante_id` explicitan relaciones que no deben depender de campos JSON o asociaciones ambiguas.
 - Exportar cada diagrama a SVG para conservar nitidez al insertarlo en Word o PDF.
 
 Referencias conceptuales:

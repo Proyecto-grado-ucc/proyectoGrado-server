@@ -1,35 +1,21 @@
 flowchart LR
-  subgraph IN["Entradas"]
-    A["Docentes"]
-    B["Cursos y grupos"]
-    C["Aulas"]
-    D["Franjas"]
-  end
-
-  subgraph IA["Motor IA"]
-    E["Cromosomas"]
-    F["Poblacion"]
-    G["Fitness"]
-    H["Cruce"]
-    I["Mutacion"]
-    J["Busqueda tabu"]
-  end
-
-  subgraph R["Restricciones"]
-    R1["Disponibilidad"]
-    R2["Choques"]
-    R3["Capacidad"]
-    R4["Intensidad"]
-  end
-
-  A --> E
-  B --> E
-  C --> E
-  D --> E
-  E --> F --> G --> H --> I --> G
-  G --> J --> K["Mejor horario"]
-  R1 --> G
-  R2 --> G
-  R3 --> G
-  R4 --> G
-  K --> Z["Horario persistido"]
+  A["Datos de entrada"] --> B["Validar insumos"]
+  B --> C{"Insumos completos"}
+  C -- "No" --> X["Reportar faltantes"]
+  C -- "Si" --> D["Crear poblacion inicial"]
+  D --> E["Evaluar restricciones"]
+  R["Docentes, aulas, franjas y grupos"] -->|parametros| E
+  E --> F["Calcular fitness"]
+  F --> G["Seleccion"]
+  G --> H["Cruce y mutacion"]
+  H --> I["Busqueda tabu local"]
+  I --> J{"Mejora candidato"}
+  J -- "Si" --> K["Guardar mejor candidato"]
+  J -- "No" --> L["Actualizar lista tabu"]
+  K --> M{"Max generaciones o fitness objetivo"}
+  L --> M
+  M -- "No" --> G
+  M -- "Si" --> N{"Solucion aceptable"}
+  N -- "Si" --> O["Horario optimizado"]
+  N -- "No" --> P["Error de convergencia"]
+  O --> Q["Persistir resultado"]

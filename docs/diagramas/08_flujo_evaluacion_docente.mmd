@@ -1,17 +1,29 @@
 flowchart TD
-  A["Crear periodo"] --> B["Crear formulario"]
-  B --> C["Definir preguntas"]
-  C --> D["Asignar docente"]
-  D --> E["Estudiante ingresa"]
-  E --> F{"Pendientes"}
-  F -- "No" --> G["Todo al dia"]
-  F -- "Si" --> H["Responder"]
-  H --> I["Enviar"]
-  I --> J["Guardar respuestas"]
-  J --> K["Marcar avance"]
-  K --> L{"Completada"}
-  L -- "No" --> M["En progreso"]
-  L -- "Si" --> N["Lista para KDD"]
+  A((Inicio)) --> B["Admin: Crear periodo academico"]
+  B --> C["Admin: Crear formulario"]
+  C --> D["Admin: Definir preguntas"]
+  D --> E["Admin: Asignar docente a evaluar"]
+  E --> F["Estudiante: Ingresar al modulo"]
+  F --> G["Backend: Consultar pendientes"]
+  G --> H{"Tiene evaluaciones sin responder"}
+  H -- "No" --> I["Estudiante: Ver historial"]
+  H -- "Si" --> J["Estudiante: Seleccionar docente"]
+  J --> K["Estudiante: Responder preguntas"]
+  K --> L["Estudiante: Enviar evaluacion"]
+  L --> M["Backend: Validar respuestas"]
+  M --> N{"Formulario completo"}
+  N -- "No" --> O["Estudiante: Completar preguntas faltantes"]
+  O --> K
+  N -- "Si" --> P{"Envio correcto"}
+  P -- "No" --> Q["Backend: Reportar error"]
+  Q --> L
+  P -- "Si" --> R["Backend: Guardar evaluacion"]
+  R --> S["Backend: Marcar lista para KDD"]
+  S --> T["Estudiante: Ver confirmacion"]
+  I --> Z((Fin))
+  T --> Z
 
-  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
-  class G,N ok
+  classDef actor fill:#eef2ff,stroke:#6366f1,color:#111827
+  classDef backend fill:#ecfdf5,stroke:#10b981,color:#064e3b
+  class B,C,D,E,F,I,J,K,L,O,T actor
+  class G,M,Q,R,S backend

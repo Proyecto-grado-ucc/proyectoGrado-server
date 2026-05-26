@@ -1,18 +1,22 @@
 flowchart TD
-  A["Login estudiante"] --> B["Mi horario"]
-  B --> C{"Tiene grupo"}
-  C -- "Si" --> D["Consultar horario"]
-  C -- "No" --> E["Ingresar codigo"]
-  E --> F["POST /estudiantes/matricular"]
-  F --> G["Buscar grupo"]
-  G --> H{"Valido y con cupo"}
-  H -- "No" --> I["Mostrar error"]
-  H -- "Si" --> J["Asignar grupo"]
-  J --> K["Consultar horario"]
-  D --> L["Mostrar horario"]
-  K --> L
+  A((Inicio)) --> B["Login estudiante"]
+  B --> C["Mi horario"]
+  C --> D{"Tiene grupo vigente"}
+  D -- "No" --> E["Ingresar codigo de acceso"]
+  E --> F["Validar codigo y cupo"]
+  F --> G{"Codigo valido"}
+  G -- "No" --> H["Mostrar error y reintentar"]
+  H --> E
+  G -- "Si" --> I["Matricular estudiante"]
+  D -- "Si" --> J["Verificar horario activo"]
+  I --> J
+  J --> K{"Existe horario publicado"}
+  K -- "No" --> L["Mostrar aviso sin horario activo"]
+  K -- "Si" --> M["Mostrar horario del grupo"]
+  L --> Z((Fin))
+  M --> Z
 
   classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
   classDef warn fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
-  class L ok
-  class I warn
+  class M ok
+  class H,L warn

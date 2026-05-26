@@ -2,20 +2,18 @@ C4Context
 title Figura 6.1. Contexto del Sistema CAL
 
 Person(admin, "Administrador", "Opera la gestion academica.")
-Person(docente, "Docente", "Consulta horario y resultados.")
-Person(estudiante, "Estudiante", "Consulta horario y evalua docentes.")
+Person(docente, "Docente", "Consulta horarios, resultados y alertas.")
+Person(estudiante, "Estudiante", "Consulta horarios y evalua docentes.")
 
 System(cal, "Sistema CAL", "Gestion academica, horarios IA y evaluacion docente.")
 
 System_Ext(sendgrid, "SendGrid", "Correo transaccional.")
-System_Ext(gemini, "Gemini AI", "Apoyo de IA.")
-System_Ext(aws, "AWS", "Infraestructura productiva.")
+System_Ext(gemini, "Gemini AI", "Servicio externo de apoyo al motor IA.")
 
 Rel(admin, cal, "Administra")
 Rel(docente, cal, "Consulta")
 Rel(estudiante, cal, "Usa")
-Rel(cal, sendgrid, "Envia correo")
-Rel(cal, gemini, "Solicita apoyo IA")
-Rel(cal, aws, "Se despliega en")
+Rel(cal, sendgrid, "Envia correos")
+Rel(cal, gemini, "Solicita sugerencias")
 
 UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")

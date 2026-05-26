@@ -1,17 +1,21 @@
 flowchart TD
-  A["Seleccionar periodo"] --> B["Generar horario"]
-  B --> C["Validar rol"]
-  C --> D["Cargar datos"]
-  D --> E{"Datos completos"}
-  E -- "No" --> F["Reportar faltantes"]
-  E -- "Si" --> G["Preparar entrada IA"]
-  G --> H["Algoritmo genetico"]
-  H --> I["Busqueda tabu"]
-  I --> J["Calcular metricas"]
-  J --> K["Guardar horario"]
-  K --> L["Mostrar resultado"]
-
-  classDef ok fill:#dcfce7,stroke:#16a34a,color:#14532d
-  classDef warn fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
-  class L ok
-  class F warn
+  A((Inicio)) --> B["Admin abre modulo horarios"]
+  B --> C["Validar rol admin"]
+  C --> D{"Autorizado"}
+  D -- "No" --> E["403 acceso denegado"]
+  D -- "Si" --> F["Seleccionar periodo"]
+  F --> G["Cargar datos maestros"]
+  G --> H{"Datos completos"}
+  H -- "No" --> I["Reportar faltantes"]
+  I --> F
+  H -- "Si" --> J["Ejecutar ciclo genetico"]
+  J --> K["Aplicar tabu por generacion"]
+  K --> L{"Converge"}
+  L -- "No" --> M["Reportar no convergencia"]
+  M --> F
+  L -- "Si" --> N["Consultar sugerencias Gemini"]
+  N --> O["Incorporar recomendaciones validas"]
+  O --> P["Persistir horario"]
+  P --> Q["Publicar horario"]
+  E --> Z((Fin))
+  Q --> Z
