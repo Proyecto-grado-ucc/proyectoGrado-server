@@ -1,0 +1,90 @@
+{
+  "id": "CAL-QA-CARGA-AWS-001",
+  "target": "http://cal-backend-prod-v2.eba-ryxppp4p.us-east-2.elasticbeanstalk.com/api",
+  "startedAtUtc": "2026-05-26T03:13:58.206Z",
+  "endedAtUtc": "2026-05-26T03:17:32.017Z",
+  "localDateCot": "2026-05-25",
+  "environment": {
+    "provider": "AWS",
+    "service": "Elastic Beanstalk",
+    "environmentName": "cal-backend-prod-v2",
+    "postTestStatus": "Green / Ok"
+  },
+  "scenario": "single-page burst: concurrent users issue one read request across critical endpoints; 70s cooldown between stages to respect configured 100 req/min/route/IP throttling",
+  "endpoints": [
+    "GET /api/health",
+    "GET /api/periodos?page=1&size=20",
+    "GET /api/horarios?page=1&size=20",
+    "GET /api/evaluaciones",
+    "GET /api/docentes?page=1&size=20",
+    "GET /api/usuarios?page=1&size=10"
+  ],
+  "stages": [
+    {
+      "users": 50,
+      "totalRequests": 50,
+      "ok": 50,
+      "errors": 0,
+      "errorRatePct": 0,
+      "avgMs": 361.82,
+      "p50Ms": 359.83,
+      "p95Ms": 506.12,
+      "p99Ms": 511.88,
+      "maxMs": 511.88,
+      "status": {
+        "200": 50
+      }
+    },
+    {
+      "users": 100,
+      "totalRequests": 100,
+      "ok": 100,
+      "errors": 0,
+      "errorRatePct": 0,
+      "avgMs": 456.65,
+      "p50Ms": 436.46,
+      "p95Ms": 591.74,
+      "p99Ms": 600.3,
+      "maxMs": 600.35,
+      "status": {
+        "200": 100
+      }
+    },
+    {
+      "users": 200,
+      "totalRequests": 200,
+      "ok": 200,
+      "errors": 0,
+      "errorRatePct": 0,
+      "avgMs": 883.13,
+      "p50Ms": 890.79,
+      "p95Ms": 1248.21,
+      "p99Ms": 1273.32,
+      "maxMs": 1284.85,
+      "status": {
+        "200": 200
+      }
+    },
+    {
+      "users": 300,
+      "totalRequests": 300,
+      "ok": 300,
+      "errors": 0,
+      "errorRatePct": 0,
+      "avgMs": 805.53,
+      "p50Ms": 800.5,
+      "p95Ms": 1271.54,
+      "p99Ms": 1313.35,
+      "maxMs": 1316.8,
+      "status": {
+        "200": 300
+      }
+    }
+  ],
+  "result": "Aprobada",
+  "notes": [
+    "No se observaron errores HTTP 5xx.",
+    "La prueba de pico de 300 usuarios concurrentes fue superada.",
+    "El backend conserva proteccion de throttling; trafico repetitivo excesivo devuelve 429 Too Many Requests."
+  ]
+}
